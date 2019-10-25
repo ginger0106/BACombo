@@ -1,0 +1,3 @@
+python server.py --mode local --max_step 250 --step_epoch 1 --model_path model_json/fedavg_n.json --dataX_path dataset/cifar10_X.npy --dataY_path dataset/cifar10_Y.npy --data_distribution_file data_info/10_iid.txt  --p2p 1 --seg 4 --rep 2 
+python server.py --mode local --max_step 250 --step_epoch 1 --model_path model_json/fedavg_n.json --dataX_path dataset/cifar10_X.npy --dataY_path dataset/cifar10_Y.npy --data_distribution_file data_info/10_iid.txt  --p2p 1 --seg 2 --rep 4 
+python server.py --mode local --max_step 250 --step_epoch 1 --model_path model_json/fedavg_n.json --dataX_path dataset/cifar10_X.npy --dataY_path dataset/cifar10_Y.npy --data_distribution_file data_info/20_iid.txt  --p2p 1 --seg 2 --rep 2 
