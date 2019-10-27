@@ -25,7 +25,10 @@ def parse_distribution_info(x_train,y_train,data_info_file,shuffle=True):
 
     label_dict = {}
     for i in range(len(x_train)):
-        if label_dict.has_key(int(y_train[i].argmax())):
+        if int(y_train[i].argmax()) in label_dict:
+            # label_dict.\
+            #
+            #     has_key(int(y_train[i].argmax())):
             label_dict[int(y_train[i].argmax())].append((x_train[i],y_train[i]))
         else:
             label_dict[int(y_train[i].argmax())] = [(x_train[i],y_train[i])]

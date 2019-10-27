@@ -7,14 +7,14 @@ set_session(tf.Session(config=config))
 import keras
 import os
 from utils import data_util
-from virtual_node import Worker
+from .virtual_node  import Worker
 
 class Simulator:
     def __init__(self,args):
 
         #data init
-        [x_train,x_test] = np.load(args.dataX_path)
-        [y_train,y_test] = np.load(args.dataY_path)
+        [x_train,x_test] = np.load(args.dataX_path,encoding="latin1")
+        [y_train,y_test] = np.load(args.dataY_path,encoding="latin1")
         ori_rec_len = len(x_train)
         parse_result = data_util.parse_distribution_info(x_train,y_train,args.data_distribution_file)
         self.max_step = args.max_step
@@ -30,7 +30,7 @@ class Simulator:
             else:
                 self.result_file = "%s_seg_%s_rep_%s.npy"%(self.num_nodes,self.segments,self.replica)
         else:
-            print "PS mode"
+            print ("PS mode")
             self.result_file = "%s_baseline.npy"%self.num_nodes
         self.intervals = np.array([1]*self.num_nodes)
 
@@ -65,7 +65,7 @@ class Simulator:
             self.shape_list.append(x.shape)
             flat_m.extend(list(x.flatten()))
 
-        seg_length = len(flat_m) / self.segments + 1
+        seg_length = len(flat_m) // self.segments + 1
 
         return flat_m[seg*seg_length:(seg+1)*seg_length]
 
@@ -79,6 +79,11 @@ class Simulator:
             result.append(np.array(flat_m[current_pos:current_pos+total_number]).reshape(shape))
             current_pos += total_number
         return np.array(result)
+
+    def early_step(self):
+        pass
+
+
 
     def run(self):
 

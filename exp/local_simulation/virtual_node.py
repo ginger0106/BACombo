@@ -34,7 +34,7 @@ class Worker:
         # self.batch_size = int(float(batch_size * len(self.x_train))/ori_rec_len)
 
 
-        print self.batch_size
+        print(self.batch_size)
 
     # def update_lr(self):
     #     S = K.get_value(self.model.optimizer.lr)
