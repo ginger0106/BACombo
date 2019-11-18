@@ -1,0 +1,20 @@
+\section{Analysis}
+
+\newcommand{\wti}[0]{W_{t,i}}
+\newcommand{\wt}[0]{W_{t}}
+\newcommand{\norm}[1]{\Vert #1 \Vert_{1}}
+
+
+\begin{equation}
+\begin{split}
+	\Vert \wti - W^*\Vert & = \Vert \wti -\wt + \wt - W^*\Vert \\
+                      & \leq \Vert \wti -\wt \Vert + \Vert \wt - W^* \Vert \\
+                      & \leq \Vert \wti -\wt \Vert + \rho	
+\end{split}
+\end{equation}
+
+\begin{equation}
+\begin{split}
+	\norm{\wti -\wt}  & = \norm{\sum_{j\in N} \frac{|D_j|\hat{\wti}}{|D|} - W^*} 
+\end{split}
+\end{equation}
