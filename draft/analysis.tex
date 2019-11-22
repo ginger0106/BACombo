@@ -1,7 +1,8 @@
 \section{Analysis}
 
-\newcommand{\wti}[0]{W_{t,i}}
-\newcommand{\wt}[0]{W_{t}}
+\newcommand{\wti}{W_{t,i}}
+\newcommand{\wtj}{W_{t,j}}
+\newcommand{\wt}{W_{t}}
 \newcommand{\norm}[1]{\Vert #1 \Vert_{1}}
 
 
@@ -15,6 +16,13 @@
 
 \begin{equation}
 \begin{split}
-	\norm{\wti -\wt}  & = \norm{\sum_{j\in N} \frac{|D_j|\hat{\wti}}{|D|} - W^*} 
+	\norm{\wt -W^*}  & = \norm{\sum_{j\in N} \frac{|D_j|\widetilde{\wtj}}{|D|} - W^*}  \\
+	& = \norm{\sum_{j\in N} \frac{|D_j|\tilde{\wtj}}{|D|} - \sum_{j\in N} \frac{|D_j|W^*}{|D|}} \\
+	& = \norm{ \sum_{j\in N} \frac{|D_j|}{|D|} ( \widetilde{\wtj} -W^* ) } \\
+	& \leq \sum_{j\in N} \frac{|D_j|}{|D|} \norm{\widetilde{\wtj} -W^* } \\
+	& \leq \norm{\widetilde{W_{t,\hat{j}} } - W^*}
 \end{split}
 \end{equation}
+
+Where $\hat{j} = argmax \sum_{j\in N} \frac{|D_j|}{|D|} \norm{\widetilde{W_{t,\hat{j}} } - W^*}$ 
+
