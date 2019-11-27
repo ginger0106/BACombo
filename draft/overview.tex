@@ -1,0 +1,60 @@
+
+\input{worker.tex} 
+
+\section{\sys Design}
+In this section, we introduce \sys, a decentralized federated learning system based on segmented gossip aggregation. We firstly present the implementation details of \sys, then discuss how it handles the dynamic nature of FL workers, and finally, we give a brief analysis of the convergence of \sys.
+
+\subsection{Implementation Details}
+As a decentralized FL system, we focus on the design of the workers as the participation of the centralized server is not required during the training. However, it's important to notice that before the training starts, the server has to initialize the model parameters of each worker with the same value otherwise the training may fail to converge. 
+
+A \sys worker follows a stateful training process as illustrated by the numbered steps in Fig.\ref{Fig: worker-arch}. At each iteration, the workers (1) update the model with local dataset and meanwhile, (2) send the segment pulling requests to other workers, once the update is finished, they (3) send the segments to the requestors as a response of the pulling requests and when all the pulling requests are satisfied, the workers (4) aggregate the model segments and start next iteration. Next, we describe the implementation details of these steps.
+
+\noindent{\bf (1) Local Update.} The learning process starts with the worker updating the model with the local dataset. The worker takes the aggregation result of the last iteration as the input model and updates it using stochastic gradient descent(SGD) with the local data. To reduce the communication cost, the local update may contain multiple SGD rounds before the communication with other workers. We denote the communication interval or the number of SGD rounds as $\tau$, which, in typical FL systems, could be up to a few epochs.
+
+\noindent{\bf (2) Segments Pulling.} The workers firstly decide how to partition the model. They don't have to follow the same partition rule, but for simplicity, we assume they partition the model into $S$ segments in the same way. For each segment, the worker has to select $R$ peers and sends the \emph{pulling request}, which contains a segment description and a unique identifier of the worker to indicate which part of the model is to be sent and whom it suppose to be sent to. 
+
+Each worker has to send $S\times R$ segment pulling requests to the other workers, and \sys tries to distribute these requests evenly among all the workers to engage more links and balance the transmission workload. Thus for each request, the target worker is randomly selected from all the other workers without replacement until there is no option left, which means when $S\times R \leq n$, all the segments come from different workers. Note that for each iteration, the pulling requests can be sent even before the local update starts; in this way, the target workers can send the segments immediately when the local model is ready.
+
+\noindent{\bf (3) Segments Sending.} The sending procedure is a twin action of the segments pulling. When the worker finishes the local update, it is ready to send its update result to others. Rather than actively pushing the model, the worker only dispatches the model segments according to the received pulling requests.
+
+\noindent{\bf (4) Model Aggregation.} While the worker is providing the model segments to others, it is also receiving the segments it has requested previously. The model aggregation phase is blocked until all the pulling requests are satisfied, then the worker aggregates the external model segments with the local model using \eqref{eq:seg_agg} and put the aggregated segments together to rebuild the model. With the aggregation result, the worker gets back to the first step and starts the next training iteration.
+
+
+\begin{figure}[H]
+\centering 
+\includegraphics[width=0.49\textwidth]{pics/worker_arch.pdf}
+\caption{The architecture of \sys workers}
+\label{Fig: worker-arch}
+\end{figure}
+
+
+\input{server.tex}
+
+
+
+\input{protocol.tex}
+
+
+
+
+\begin{algorithm}
+    \label{alg:restrict_update}
+    \SetAlgoLined
+    \SetKwInOut{KIn}{Input}
+    \SetKwInOut{KOut}{Output}
+    \caption{Restricted local update}
+    \KIn{client $k$, global weights $w$, interval $\tau$}
+    \KOut{local training result $w^\prime$}
+    $w^\prime \leftarrow w$\;
+    \For{local iteration $i=1,2,\dots, \tau$}{
+        $b \leftarrow$ random batch of training samples\;
+        $g \leftarrow$ the gradients of $w^\prime$ on batch $b$\;
+        \eIf{$w^\prime$ is overfitted}{
+            \textbf{break}\;
+        }{
+        $w^\prime \leftarrow w^\prime - \mu g$\;
+        }
+    }
+    \Return $w^\prime$
+\end{algorithm}
+

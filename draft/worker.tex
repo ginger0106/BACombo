@@ -1,0 +1,100 @@
+\section{Segmented Gossip Aggregation}
+
+Now consider the network topology with $n$ workers. An all-reduce worker pushes $n-1$ local model replicates to the other workers through $n-1$ links while a gossip worker is expected to push one local model replicate out through only one link. Within a datacenter where the workers are connected by the local area network, they can always communicate with each other at maximum bandwidth thus the gossip worker can achieve great speed up as the transmission size is drastically reduced.
+
+However, in the federated learning context where the workers are geo-distributed, the real bandwidth between the workers is typically small due to the potential bottleneck of WAN. Thus the traditional gossip-based schemes can not make full use of the worker's bandwidth because the transmissions are limited in one or few links. We propose the \emph{Segmented Gossip Aggregation} to solve this problem by "splitting" the transmission task and feeding them into more links.
+
+%In the \sys solution, the worker takes the responsibility of data flow: to communicate actively the local model with a portion of peers, transfer local model and aggregate local model. The intuition of \textit{Active} borrows the idea from Gossip-based protocols in which the workers actively push the models to peers. By doing this, the heavy traffic in $n$ links of parameter server could be dissolved among the $n(n-1)$ links between $n$ workers.
+%
+
+\subsubsection{Segmented Pulling}
+
+Fig. \ref{Fig: Segment sub.1} illustrates the transfer procedure with segmented gossip aggregation which we name it \emph{segmented pulling.} In the aggregation phase, the worker needs to receive the model parameters from others. While the naive gossip-based synchronization schemes require the worker to collect the whole model parameters, segmented pulling allows the worker to pull different parts of the model parameters from different workers and rebuild a mixed model for aggregation.
+
+Let $\mathcal{W}$ denote the model parameters. The worker firstly breaks the structure of $\mathcal{W}$ into $S$ segments without overlapping such that
+\begin{equation}
+    \mathcal{W} = (\mathcal{W}[1],\mathcal{W}[2],\dots,\mathcal{W}[S])
+\end{equation}
+
+For each segment $l$, the worker chooses a peer worker which we denote it as $j_l$ and then actively pulls the corresponding segment $\mathcal{W}_{j_l}[l]$ from it. Note that this step is parallelized to make full use of the bandwidth. When the worker fetches all the model segments back, a new mixed model $\mathcal{W}^\prime$ can be rebuilt from the segments such that
+\begin{equation}
+    \mathcal{W}^\prime = (\mathcal{W}_{j_1}[1],\mathcal{W}_{j_2}[2],\dots,\mathcal{W}_{j_l}[S])
+\end{equation}
+
+The naive gossip-based scheme pulls all the segments from a single peer worker. However, with segmented pulling, if we choose a different peer for each segment, the total transmission size is still equal to one model, like the naive gossip-based schemes, but the traffic is dissolved among not one but $S$ links.
+
+
+
+%\begin{figure}[H]
+%\centering 
+%\includegraphics[width=0.3\textwidth]{pics/seg_pull.pdf}
+%\caption{Segmented Pulling}
+%\label{Fig: seg-pull}
+%\end{figure}
+
+
+\subsubsection{Model Replica}
+
+% Like other gossip-based approaches, we use random partial aggregation as an approximation of the global aggregation. But if the number of the participating workers is too big, which could be common in a federated learning context, there might be huge deviation in such approximation if the worker aggregates local model with only one external model as there are many of them. 
+% 
+
+In traditional distributed ML scenario within the datacenter, the gossip-based solutions can choose only one other worker for aggregation but still achieve excellent convergence, because the workers ``gossip" with each other frequently such that the update of each worker are propagated through the whole network before they become too stale\cite{daily2018gossipgrad:}. However, for communication efficient FL systems, the staleness of the model updates is hard to bound as the models are trained separately for up to a few epochs. 
+ 
+
+Thus as a compromise, we set a hyper-parameter \textit{Model Replica} $R$ which represents the number of the mixed model gathered by segmented pulling. To rebuild $R$ mixed models, the worker will pull $S \times R$ segments from peers. Thus increasing the value of $R$ means more segments have to be transferred through the network, which may cause bandwidth overhead. But this is necessary to accelerate the propagation and ensure the model quality. Since there is no centralized server bottleneck, the model training speed could still be faster even with extra transmission.
+
+
+%The \sys worker updates its local model using multiple "local models" from peers, each local model is a composition of model segments from different peers, we call the composition \textit{Model Replica}.
+
+%
+%the workers pull their local model to peers instead of center server.  
+%
+%When a worker $i$ finishes the local training and seeking to do the model aggregation, it reports its status to the index server. And then the server randomly samples a subset $K_i$ from all the participating workers as the aggregation candidates of worker $i$ and send the information about $K_i$ to worker $i$. To control the training progress, the workers of $K_i$ should have the same training iterations. When worker $i$ receives the candidate list $K_i$, it proactively fetches the model from the candidate workers, do the aggregation and then continue training on the local dataset. We use an index server to track the information of workers instead of storing peer information on the workers directly because with the growth of the workers and the variation of the network environment, the synchronization overhead can be very huge.
+%
+% By increasing the initiative of the workers, the bottleneck of server is removed because the communication of the server is trivial and the model parameters, which is the heavy part, are transferred among $n(n-1)$ links of all the workers.
+
+%\subsection{Worker Segmented Transfer and Aggregation}
+%After ... , the worker will ... transfer and aggregation...
+% 一句话描述他们要干什么
+
+
+%The idea of pulling model parameters from peers is quite similar with the Gossip-based protocols in which the workers randomly push the models to others. So they are facing the same challenge that the overall transmission quantity is increased for a single worker. In the traditional parameter server architecture, in one global iteration, the worker only has to send and receive for one time. But with the gossip methods, each worker is expected to send and receive for $|K_i|$ times in one iteration. 
+
+%
+%As shows in Figure \ref{Fig: Segment sub.1}, when the worker $i$ receives the manifest of $K_i$ candidate worker list from index server.  if the model are break in to $S$ and the replica is set to be $R$. For each segment $l$, worker $i$ selectively choose a worker $N_l$ from the candidate list, and then fetch the corresponding segment from worker $N_l$ which we denote as $\mathcal{W}[l;N_l]$. Note that this step can be parallelized, and to simplify, we use a uniform random sampling method to choose the peers. 
+
+%With the segmented transfer method, worker $i$ receives model information from multiple peers with the transfer size equal to one model. Thus in the aggregation phase, the aggregation result can be affected by more datasets and this could help to increase the generality of the model. But if the number of the participating workers is too big, which could be common in a federated learning context, the segments can only cover few workers. Increasing the number of segments might help but an extremely small segment size could lead to over-mottled parameters. Thus as a compromise, we set a hyper-parameter $R(eplica)$ which means the number of the mixed model rebuilt by Segmented Transfer. 
+%
+%Another shining point of segmented transfer is privacy preserving. The complete model parameter or gradient set has the potential to leak private data information under attack. Instead of pulling the whole model from peers, \sys only collects a random subset of the parameters, which helps to preserve the data privacy. 
+
+\begin{figure}[H]
+\centering 
+\subfigure[Segmented Pulling]{
+\label{Fig: Segment sub.1}
+\includegraphics[width=0.2\textwidth]{pics/transfer.pdf}}
+\subfigure[Segmented Aggregation]{
+\label{Fig: Segment sub.2}
+\includegraphics[width=0.225\textwidth]{pics/aggregation.pdf}}
+\caption{Segmented Gossip Aggregation}
+\label{Fig: Segmented schema}
+\end{figure}
+
+\subsubsection{Segmented Aggregation}
+%When it fetches all the segments back, a new mixed model can be rebuilt as:
+%\begin{equation}
+%    \mathcal{W}^\prime = \bigcup_{l = 1}^{S} \mathcal{W}[l;N_l] \label{eq:seg_union}
+%\end{equation}
+Typically the model aggregation uses weighted averaging of the received model parameters with the worker's dataset size as weight. But in segmented gossip aggregation, the mixed models are patched together from different workers, so it is hard to set a reasonable weight for the mixed model as a whole. For such case, we use a segment-wise model aggregation. 
+
+ Assume the worker $i$ has fetched all the segments and rebuilt $R$ mixed models which we represent as $\mathcal{W}^\prime_1,\mathcal{W}^\prime_2, \dots ,\mathcal{W}^\prime_R$. Then for each segment $l$, we have $R$ mixed models and one local model to aggregate. Let $P_l$ denote the set of the workers which provide the segment $l$ (worker $i$ itself is contained too) and $|D_j|$ denote the dataset size of worker $j$, then we can aggregate segment $l$ by:
+ 
+ \begin{equation}
+ \label{eq:seg_agg}
+     \widetilde{\mathcal{W}}[l] = \frac{\sum_{j\in P_l}|D_j|\mathcal{W}_j[l]}{\sum_{j\in P_l}|D_j|}
+ \end{equation}
+
+Combine all the aggregated segments, and we can rebuild the final aggregation result by 
+\begin{equation}
+    \mathcal{W} = (\widetilde{\mathcal{W}}[1],\widetilde{\mathcal{W}}[2],\dots,\widetilde{\mathcal{W}}[S])
+\end{equation}
+And then the worker can continue its training until next aggregation phase comes.

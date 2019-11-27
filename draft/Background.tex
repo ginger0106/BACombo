@@ -1,0 +1,49 @@
+\section{Background and }
+
+
+\begin{algorithm}[!t]
+
+\caption{Rounding-based Approximation Algorithm - RA}
+
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
+\begin{algorithmic}[1]
+\REQUIRE $S, Q, I, J, H, \Delta t,\{Y^q\}_{\forall q}, \{A^q\}_{\forall q},\{S^q_{ij}(h)\}_{\forall q,i,j,h},$\\
+$\{B_{is}\}_{i,s}, \{V_i(h)\}_{\forall i,h}, \{c_i\}_{\forall i}$
+\ENSURE $\{\bar{x}_{is}(h)\}_{\forall i,s,h}$, $\{\bar{y}_{ijs}^q(h)\}_{\forall q,i,j,s,h}$
+
+\STATE Solve the relaxed LP (8) using interior point method.
+\STATE Obtain the optimal fraction solution $\{\hat{x}_{is}(h)\}$ and $\{\hat{y}_{ijs}^q(h)\}$
+\FOR {$i \in [I]$, $j\in[J]$, $h \in H$}
+	\STATE $\Omega \leftarrow \{\hat{y}^q_{ijs}(h), \forall q\in [Q], s \in [S]| \hat{x}_{is}(h) \text{ is fractional}\}$
+	\STATE $\Theta, \Theta_{all}, \{z^q_{ijs}(h)\} \leftarrow $SC($Q, \Omega$)
+	\FOR {$q \in \{q \in [Q]|\Theta^q \in \Theta_{all} \}$}
+		\STATE Select the first $s$ in $\Theta$ that exists in $\Theta^q$ as $\hat{s}$
+		\FOR {$s \in \Theta^q \setminus {\hat{s}}$}
+		    \IF {$z^q_{ij\hat{s}}(h) - \lfloor z^q_{ij\hat{s}}(h)\rfloor \leq \lceil z^q_{ij{s}}(h)\rceil -z^q_{ij{s}}(h)$}
+		        \STATE $z^q_{ij\hat{s}}(h) \leftarrow z^q_{ij\hat{s}}(h) + z^q_{ij{s}}(h) -\lfloor z^q_{ij{s}}(h)\rfloor$
+		        \STATE $z^q_{ij{s}}(h) \leftarrow \lfloor z^q_{ij{s}}(h)\rfloor$
+		    \ELSE
+		        \STATE $z^q_{ij\hat{s}}(h) \leftarrow z^q_{ij\hat{s}}(h) - (\lceil z^q_{ij{s}}(h)\rceil -z^q_{ij{s}}(h))$
+		        \STATE $z^q_{ij{s}}(h) \leftarrow \lceil z^q_{ij{s}}(h)\rceil$
+		    \ENDIF
+% 			\STATE $\gamma_1 \leftarrow z^q_{ij{s}}(h) - \lfloor z^q_{ij{s}}(h)\rfloor; \gamma_2 \leftarrow \lceil z^q_{ij{s}}(h)\rceil -  z^q_{ij{s}}(h)$
+% 			\STATE With probability $\frac{\gamma_2}{\gamma_1 + \gamma_2}$ set 
+% 				$$z^q_{ij{s}}(h) \leftarrow z^q_{ij{s}}(h) - \gamma_1; z^q_{ij\hat{s}}(h)\leftarrow z^q_{ij\hat{s}}(h) + \gamma_1$$
+% 			\STATE With probability $\frac{\gamma_1}{\gamma_1 + \gamma_2}$ set
+% 				$$z^q_{ij{s}}(h) \leftarrow z^q_{ij{s}}(h) + \gamma_2; z^q_{ij\hat{s}}(h)\leftarrow z^q_{ij\hat{s}}(h) - \gamma_2$$
+		\ENDFOR
+	\ENDFOR
+	\FOR {$s\in[S]$}
+		\IF {$\hat{x}_{is}(h)$ is fractional}
+			\STATE $\bar{x}_{is}(h) \leftarrow \lceil\sum\limits_{q\in[Q]}\sum\limits_{j\in[J]}z^q_{ij{s}}(h)\rceil$
+		\ELSE
+			\STATE $\bar{x}_{is}(h) \leftarrow \hat{x}_{is}(h)$
+		\ENDIF
+	\ENDFOR
+\ENDFOR
+\STATE Fix the variable $\{{x}_{is}(h)\}$ in (8) to $\{\bar{x}_{is}(h)\}$ and solve the new LP (8) again to obtain $\{\bar{y}_{ijs}^q(h)\}$
+
+\end{algorithmic}	\label{RA} 
+\end{algorithm}

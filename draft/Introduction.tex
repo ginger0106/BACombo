@@ -1,0 +1,31 @@
+\section{Introduction}
+
+% Data privacy Federated Learning proposed,
+
+Recent years have witnessed a rapid growth of deep learning algorithms which achieve and even transcend the human-level accuracy on nature language processing and computer vision \cite{devlin2018bert:,he2016deep}, thanks to the massive amount of data collected. To improve the deep learning performance, it is of great demand for different entities to contribute their own data and train models together. In such collaborative training, the concern about data leakage has motivated \emph{federated learning} \cite{McMahan2017FL}, which allows nodes to only synchronize the locally-trained models instead of their own original data. 
+
+A general federated learning system uses a central parameter server to coordinate the large federation of the participating workers (workers and nodes are used interchangeably in this paper). The workers train a local model with their own dataset and send the model updates (\eg gradients or parameters) periodically to a centralized server for synchronization. To reduce the risk of single point failure, a couple of decentralized synchronization methods have been proposed. All-reduce \cite{patarasuk2009allreduce} adopts an all-to-all scheme, i.e., each worker sends the local model updates to all other workers. It achieves the same synchronization effect as parameter server but consumes much bandwidth resource between works. When the model updates from all nodes in the system are sent to all other nodes, the performance is highly degraded. To reduce the transmission cost, gossip based model synchronization \cite{daily2018gossipgrad:,haas2002gossip-based} is proposed: workers send local updates to only one or a group of selected nodes.
+
+In real-world federated learning scenarios, the network capacities between nodes are highly uniformly distributed and smaller than that in a datacenter \cite{vulimiri2015global}. Thus, it is still extremely bandwidth costly when workers send the \emph{full} model updates (e.g., the size can be up to $1360$MB in $BERT_{LARGE}$ \cite{devlin2018bert:}). An intuitive question is then, is it possible for workers to synchronize the model \emph{partially}, from/to \emph{only} a part of the workers, and still achieve good training results? 
+
+Our answer to this question is a novel decentralized federated learning design, introducing a segmented gossip approach, which not only makes full utilization of node-to-node bandwidth by transmitting model \emph{segmentations} in a peer-to-peer manner, but also has good training convergence by carefully forming dynamical synchronization gossiping groups. In particular, the details of the design and the contributions are summarized as follows.
+
+First, we propose a model segmentation level synchronization mechanism. We ``split'' a model into a set of segmentations---subsets which contain the same number of model parameters that are not overlapped with each other. Workers perform segmentation level update by aggregating a local segmentation with the corresponding segmentation from $k$ other workers. Based on our analysis, $k$ can be much smaller than the number of all workers, to achieve good convergence for the training process. 
+
+%Second, we a propose bandwidth-aware gossiping strategy, to dynamically select the $k$ neighbors for each training iteration. Our objective is to maximize the utilization of bandwidth capacities between workers, which are different for different \emph{paths} between worker pairs and dynamically changing overtime. Our gossiping algorithm monitors and predicts the path capacity, and forms worker neighborhood in a path capacity ``saturation'' manner that marginally let pairs of workers with spare bandwidth become gossip neighbors.
+
+Second, we propose a decentralized federated learning design, borrow the idea from gossip protocol; each worker stochastically selects a few workers to transfer the model segment for each training iteration. Our objective is to maximize the utilization of bandwidth capacities between workers and split the bill of communication cost. To improve the convergence performance of our solution, we introduce ``Model Replica'' to guarantee the enough information from different workers. The theory analysis proves that our solution has well convergence property.
+
+Third, we implement the model segmentation strategy and the gossiping strategy into a prototype called \sys, and design experiments to evaluate its performance. Our results show that our design significantly reduces the training time in practical network topology and bandwidth setup, with only slightly accuracy degrade. 
+
+
+%  We simulate both the training and transferring process to evaluate the design of \sys. The simulation results show that \sys (1)significantly reduces communication time, by *** compares to *** (2)still maintains the training accuracy compares to the state-of-art method, (3)high scalability: 2X more workers, ** speed up in time.
+
+
+% In summary, the main contributions of this work can be listed as follows:
+% \begin{packeditemize}
+%     \item We proposed a new decentralized synchronization scheme which adopts the segmented transmission to fully exploit the bandwidth of a single worker.
+%     \item We designed a new federated learning system, \sys
+%     \item We simulated the \sys learning process.
+% \end{packeditemize}
+%

@@ -1,0 +1,34 @@
+\section{Related work}
+\textbf{Distributed ML}
+Conventional distributed machine learning systems are centralized, workers periodically send the local updates to a (a set of) parameter servers (PS), such as SparkNet\cite{moritz2016sparknet:}, Tensorflow\cite{abadi2016tensorflow:} and traditional federated learning systems \cite{konecny2015federated,konevcny2016federated}. To avoid bottleneck and single point failure, \cite{li2014scaling,mlsys2019towards} aim to scale PS for  better network utilization. Although these scaling methods could increase the accumulative bandwidth at the server side, they are still suffering the long convergence time when the network is poor.
+
+An alternative solution is decentralized architecture, the workers exchange updates directly using all-reduce scheme, with a communication cost $O(n^2)$ for $n$ workers. To reduce the huge communication costs, an intuitive approach is to take the advantage of topology. Baidu first introduced Ring-allreduce \cite{allreduce}, which is a bandwidth-optimal way to do an allreduce. The workers involved are arranged in a ring, each worker send gradients to the next clockwise worker and receives from the previous one. In this way, it reduces the communication complexity to linear growth in scale. similarly, the tree \cite{li2015malt:} and graph \cite{agarwal2014a} topologies are proposed to reduce the communication cost. However, these approaches may need multiple hops between workers, resulting in slow convergence. Instead of topology-based method, Ako \cite{watcharapichat2016ako:} propose a partial gradient updates method. In each synchronization round, each worker sends a gradient partition to every other worker. Obviously, Ako reduces the synchronization time and the communication overhead depends on the partition size and the worker number. 
+ 
+Although these existing approaches perform well in distributed ML, they aggregate gradients every epoch, which still face heavy communication cost and is not practical in federated learning with slow internet connections. 
+
+ 
+% However, in the federated learning scenario, it is still a huge cost to communicate with every other worker.
+%To reduce the huge communication costs in decentralized architecture and speed up the training time, 
+
+\textbf{Communication efficient FL} 
+A main research focus of federated learning is to reduce the communication cost. \cite{konevcny2016federated} propose structured updates and sketched updates to reduce the exchange data size at the cost of accuracy loss. \cite{McMahan2017FL} propose the federated averaging algorithm (FedAvg) to reduce the parameter updates significantly. FedAvg aggregates parameters after several epochs. In each synchronization round, it selects a fraction of workers and computes the gradient of the loss over all the data held by these workers. These methods are based on the PS architecture, which face the network congestion when the updates arrive at the PS concurrently.  
+
+%\cite{konecny2015federated,konevcny2016federated,McMahan2017FL,mcmahan2018learning}, to reduced the upload communication, \cite{konevcny2016federated} proposed structured updates and sketched updates %\cite{konecný2015federated,McMahan2017FL,mcmahan2018learning,mlsys2019towards,konevcny2016federated} is focus on  
+
+\textbf{Gossip protocol in ML}
+The gossip protocol widely used in distributed systems \cite{baraglia2013a,haas2002gossip-based}, each worker sends out message to a set of other workers, the message propagates through the whole network worker by worker. \cite{blot2016gossip} first introduced the gossip protocol in deep learning. They propose GoSGD, using sum-weight gossip protocol to share the updates with selective workers. The results show good consensus convergence properties. \cite{daily2018gossipgrad:} propose GossipGraD, which is a gossip based SGD algorithm for large scale deep learning system and reduces the communication complexity to $O(1)$. 
+
+However, in federated learning, network connections between geo-distributed workers usually could not be fully utilized because of the bottleneck, which are ignored in these approaches. 
+%In this work, we bring the Gossip protocol to federated learning, which maximizes the utilization of bandwidth capacities between workers and transfer the smaller parameter segments to reduce the communication cost and speed up convergence.
+
+%these works did not consider the network connection between geo-distributed workers 
+%
+%federated learning
+%
+%While, to bring the Gossip protocol to federated learning is still an open issue. 
+
+%These approaches did not consider the partial updates and still suffer from the slow convergence in federated learning scenario.
+
+%which is a new way to share information between different threads inspired by gossip algorithms and showing good consensus con- vergence properties. 
+%(1)Conventional gossip protocol \cite{blot2016gossip} (2)Distributed machine learning with gossip \cite{blot2016gossip} \cite{daily2018gossipgrad:}
+

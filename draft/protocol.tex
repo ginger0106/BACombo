@@ -1,0 +1,70 @@
+
+\subsection{Convergence Analysis}
+
+\newtheorem{theorem}{\bf Theorem}
+\newtheorem{define}{\bf Definition}
+\newtheorem{assumption}{\bf Assumption}
+
+Generally, the deep learning uses the gradient descent algorithms to find the model parameters that minimize a user-defined loss function which we denote it as $F(\mathcal{W})$. For the loss function, we make the following assumptions.
+
+\begin{assumption}
+{\bf (Loss function)} $F(\mathcal{W})$ is a convex function with bounded second derivative such that
+\begin{equation}
+    \mu \leq ||\nabla^2F(\mathcal{W})|| \leq L
+\end{equation}
+\end{assumption}
+
+In a centralized learning system, the model parameters are updated with the gradient $\nabla F(\mathcal{W})$ calculated from the whole dataset. But with the federated settings, the worker $i$ updates the model with the gradient of a subset of data and we denote it as $\nabla F_i(\mathcal{W})$. To capture the divergence of these two gradients, we make the next definition.
+
+\begin{define}
+    {\bf (Gradient Divergence)} For any worker $i$ and model parameter $\mathcal{W}$, We define $\delta$ as the upper bound of the divergence between local and global gradients.
+    \begin{equation}
+      || \nabla F_i(\mathcal{W}) - \nabla F(\mathcal{W})|| \leq \delta
+    \end{equation}
+\end{define}
+
+For a worker $i$ in our proposed system, at iteration $t$, the local model parameter $\mathcal{W}_{t,i}$ is an aggregation result of the local model and a few mixed models rebuilt from segments. As a contrast, we denote $\mathcal{W}_{t}$ as the aggregation result of all the nodes, which is the output of $FedAvg$ algorithm. Like the gradient divergence, we define aggregation divergence to measure the aggregation result.
+
+\begin{define}
+    {\bf (Aggregation Divergence)} For any worker $i$ at iteration $t$, we define $\rho$ as the upper bound of the divergence between partial and global aggregation.
+    \begin{equation}
+      || \mathcal{W}_{t,i} - \mathcal{W}_{t}|| \leq \rho
+    \end{equation}
+\end{define}
+
+With the above assumption and definitions, we can present the convergence result of \sys. 
+
+\begin{theorem}
+\label{trm:converge}
+    Let $\mathcal{W}^*$ denote the global optimum and $\mathcal{W}_0$ denote the initial model parameters, worker $i$ performs gradient descent on local dataset for $\tau$ times with learning rate $\alpha \leq \frac{1}{L}$ and then pull the segments to aggregate, the aggregation result is $\mathcal{W}_{t,i}$, the convergence upper bound of \sys is given by
+    \begin{equation}
+            ||\mathcal{W}_{t,i}-\mathcal{W}^*|| \leq \theta^{t\tau} ||\mathcal{W}_{0}-\mathcal{W}^*|| + (1-\theta^{t\tau})[\frac{\rho}{1-\theta^\tau} + \frac{\alpha \delta}{1-\theta}]
+    \end{equation}
+    where $\theta = 1-\alpha \mu$.
+\end{theorem}
+\newenvironment{ProofSketch}{%
+  \renewcommand{\proofname}{\bf Proof Sketch}\proof}{\endproof}
+  
+%\begin{ProofSketch}
+%This is proof
+%\end{ProofSketch}
+
+%Note that this bound is characteristic of stochastic gradient descent bounds that it converges to within a noise ball around the optimum rather than approaching it. The gap between the output and optimum comes from two part: the gradient divergence $\delta$ and the aggregation divergence $\rho$. The gradient divergence is related to the data distribution of each worker which is not alterable. According to the above inequality, the influence of $\rho$ is exacerbated when the communication interval $\tau$ increases. The aggregation divergence can be ameliorated by aggregating more models from other workers. This explains why we set a hyper-parameter $R$ to control the model replicas received from others.
+
+Note that this bound is characteristic of stochastic gradient descent bounds that it converges to within a noise ball around the optimum rather than approaching it. The gap between the output and optimum comes from two part: the gradient divergence $\delta$ and the aggregation divergence $\rho$. The gradient divergence is related to the data distribution of each worker, which is the inherent drawback of the FL system.
+
+According to the above inequality, the influence of $\rho$ is exacerbated when the communication interval $\tau$ increases. The aggregation divergence can be ameliorated by aggregating more models from other workers. This explains why we set a hyper-parameter $R$ to control the model replicas received from others. If we let $R=n-1$, the worker aggregates all the external models and the model divergence decreases to zero. In this situation, \sys degrades to the all-reduce scheme and has the same training result as the centralized way. However, we argue that the value of $R$ could be much smaller but still maintains the training efficiency, which is then validated in the evaluation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
