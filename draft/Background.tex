@@ -3,47 +3,69 @@
 
 \begin{algorithm}[!t]
 
-\caption{Rounding-based Approximation Algorithm - RA}
+\caption{Federated Averaging (FedAvg)}
 
 \renewcommand{\algorithmicrequire}{\textbf{Input:}}
 \renewcommand{\algorithmicensure}{\textbf{Output:}}
 
 \begin{algorithmic}[1]
-\REQUIRE $S, Q, I, J, H, \Delta t,\{Y^q\}_{\forall q}, \{A^q\}_{\forall q},\{S^q_{ij}(h)\}_{\forall q,i,j,h},$\\
-$\{B_{is}\}_{i,s}, \{V_i(h)\}_{\forall i,h}, \{c_i\}_{\forall i}$
-\ENSURE $\{\bar{x}_{is}(h)\}_{\forall i,s,h}$, $\{\bar{y}_{ijs}^q(h)\}_{\forall q,i,j,s,h}$
+\REQUIRE $K, T, \eta, E, w_0, N, n, n_k, p_k,  k = 1,...,N $
 
-\STATE Solve the relaxed LP (8) using interior point method.
-\STATE Obtain the optimal fraction solution $\{\hat{x}_{is}(h)\}$ and $\{\hat{y}_{ijs}^q(h)\}$
-\FOR {$i \in [I]$, $j\in[J]$, $h \in H$}
-	\STATE $\Omega \leftarrow \{\hat{y}^q_{ijs}(h), \forall q\in [Q], s \in [S]| \hat{x}_{is}(h) \text{ is fractional}\}$
-	\STATE $\Theta, \Theta_{all}, \{z^q_{ijs}(h)\} \leftarrow $SC($Q, \Omega$)
-	\FOR {$q \in \{q \in [Q]|\Theta^q \in \Theta_{all} \}$}
-		\STATE Select the first $s$ in $\Theta$ that exists in $\Theta^q$ as $\hat{s}$
-		\FOR {$s \in \Theta^q \setminus {\hat{s}}$}
-		    \IF {$z^q_{ij\hat{s}}(h) - \lfloor z^q_{ij\hat{s}}(h)\rfloor \leq \lceil z^q_{ij{s}}(h)\rceil -z^q_{ij{s}}(h)$}
-		        \STATE $z^q_{ij\hat{s}}(h) \leftarrow z^q_{ij\hat{s}}(h) + z^q_{ij{s}}(h) -\lfloor z^q_{ij{s}}(h)\rfloor$
-		        \STATE $z^q_{ij{s}}(h) \leftarrow \lfloor z^q_{ij{s}}(h)\rfloor$
-		    \ELSE
-		        \STATE $z^q_{ij\hat{s}}(h) \leftarrow z^q_{ij\hat{s}}(h) - (\lceil z^q_{ij{s}}(h)\rceil -z^q_{ij{s}}(h))$
-		        \STATE $z^q_{ij{s}}(h) \leftarrow \lceil z^q_{ij{s}}(h)\rceil$
-		    \ENDIF
-% 			\STATE $\gamma_1 \leftarrow z^q_{ij{s}}(h) - \lfloor z^q_{ij{s}}(h)\rfloor; \gamma_2 \leftarrow \lceil z^q_{ij{s}}(h)\rceil -  z^q_{ij{s}}(h)$
-% 			\STATE With probability $\frac{\gamma_2}{\gamma_1 + \gamma_2}$ set 
-% 				$$z^q_{ij{s}}(h) \leftarrow z^q_{ij{s}}(h) - \gamma_1; z^q_{ij\hat{s}}(h)\leftarrow z^q_{ij\hat{s}}(h) + \gamma_1$$
-% 			\STATE With probability $\frac{\gamma_1}{\gamma_1 + \gamma_2}$ set
-% 				$$z^q_{ij{s}}(h) \leftarrow z^q_{ij{s}}(h) + \gamma_2; z^q_{ij\hat{s}}(h)\leftarrow z^q_{ij\hat{s}}(h) - \gamma_2$$
-		\ENDFOR
-	\ENDFOR
-	\FOR {$s\in[S]$}
-		\IF {$\hat{x}_{is}(h)$ is fractional}
-			\STATE $\bar{x}_{is}(h) \leftarrow \lceil\sum\limits_{q\in[Q]}\sum\limits_{j\in[J]}z^q_{ij{s}}(h)\rceil$
-		\ELSE
-			\STATE $\bar{x}_{is}(h) \leftarrow \hat{x}_{is}(h)$
-		\ENDIF
-	\ENDFOR
+\STATE \textbf{Server executes:}
+\FOR {$t = 0, ...,T-1$}
+    \STATE server selects a subset $S_t$ of K workers at random (each worker $k$ is chosen with probability $p_k$)
+    \STATE send $w_t$ to all chosen workers
+    \FOR{each client $k \in S_t$ in parallel}
+        \STATE $w^k_{t+1} \leftarrow$ ClientUpdatae$(k,w_{t})$
+    \ENDFOR
+    \STATE $w_{t+1} \leftarrow \sum ^{K}_{k=1} \frac{n_k}{n}w^k_{t+1}$
 \ENDFOR
-\STATE Fix the variable $\{{x}_{is}(h)\}$ in (8) to $\{\bar{x}_{is}(h)\}$ and solve the new LP (8) again to obtain $\{\bar{y}_{ijs}^q(h)\}$
+\item[]
 
-\end{algorithmic}	\label{RA} 
+
+\STATE \textbf{ClientUpdatae}$(k,w_{t})$: //Run on worker $k$
+\STATE \quad worker $k$ updates $w_t$ for $E$ epoches of SGD on $F_k$ \\ \quad with step size $\eta$ to obtain $w_{t+1}$
+\RETURN $w_{t+1}$ 
+
+\end{algorithmic}	\label{Fedavg} 
 \end{algorithm}
+
+
+
+
+\begin{algorithm}[!t]
+
+\caption{BACombo}
+
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
+\begin{algorithmic}[1]
+\REQUIRE $K, T, \eta, E, \widetilde{\mathcal{W}_{0}}, N, S, \epsilon $
+
+\STATE \textbf{Each worker $i$ executes:}
+\STATE $ B \leftarrow \mathbf{0} $
+
+\FOR {$t = 0, ...,T-1$}
+    \STATE $r_t \leftarrow Random()$ 
+    \STATE updates ${\mathcal W}_{t}$ for $E$ epoches of SGD on $F_i$  with step size $\eta$ to obtain ${\mathcal W}_{t+1}$
+    \IF{ $r_t < \epsilon $}{
+        \STATE $ \{\mathcal{W}_{t,k}^\prime\}, J, \{D_j\} \leftarrow $ \textbf{SegPulling}$(Random(),K, N,i)$
+        \STATE update $B$ based on the \textbf{BandwidthPrediction}$(J)$}
+    \ELSE {
+        \STATE $ \{\mathcal{W}_{t,k}^\prime\}, J, \{D_j\} \leftarrow $ \textbf{SegmentPulling}$(BGreedy(),K, N,i)$
+    }
+    \ENDIF
+    \STATE $\widetilde{\mathcal{W}}_{t+1} \leftarrow$ \textbf{SegAggregation} $(\{\mathcal{W}_{t,k}^\prime\},{{W}}_{t+1},J ,\{D_j\})$
+\ENDFOR
+\item[]
+
+\end{algorithmic}	\label{Fedavg} 
+\end{algorithm}
+
+            % \STATE worker selects a subset $S_{t}$ of S segments at random (each segments $s$ is chosen from  with probability $p_s$)
+            
+        %             \FOR {$ k = 1, ..., K$}
+            
+        % \ENDFOR
+                % \STATE worker selects a subset $S_{t, s, r}$ of  workers at random (each worker $k$ is chosen with probability $p_k$)
