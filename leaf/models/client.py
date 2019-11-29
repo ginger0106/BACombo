@@ -11,6 +11,23 @@ class Client:
         self.train_data = train_data
         self.eval_data = eval_data
 
+    #TODO:
+    def seg_selection(self):
+        """
+
+        :return: seg_selected: seg index array R*S
+        """
+        pass
+
+    #TODO:
+    def seg_aggregation(self,seg_selected):
+        """
+
+        :param seg_selected:
+        :return: weights
+        """
+        pass
+
     def train(self, num_epochs=1, batch_size=10, minibatch=None):
         """Trains on self.model using the client's train_data.
 
@@ -92,6 +109,7 @@ class Client:
         if self.eval_data is not  None:
             test_size = len(self.eval_data['y'])
         return train_size + test_size
+
 
     @property
     def model(self):

@@ -72,6 +72,7 @@ def main():
     print_stats(0, server, clients, client_num_samples, args, stat_writer_fn)
 
     # Simulate training
+    #TODO：change the simulation pipeline for 4 baselines
     for i in range(num_rounds):
         print('--- Round %d of %d: Training %d Clients ---' % (i + 1, num_rounds, clients_per_round))
 
@@ -99,6 +100,9 @@ def main():
 
     # Close models
     server.close_model()
+
+
+
 
 def online(clients):
     """We assume all users are always online."""

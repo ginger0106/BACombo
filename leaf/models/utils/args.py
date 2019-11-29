@@ -2,6 +2,7 @@ import argparse
 
 from .constants import DATASETS, SIM_TIMES
 
+#TODO: add baseline arg:[fedavg, gossip, combo, bacombo]
 
 def parse_args():
     parser = argparse.ArgumentParser()

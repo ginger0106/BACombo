@@ -10,6 +10,37 @@ class Server:
         self.selected_clients = []
         self.updates = []
 
+    #TODO：
+    def init_bandwidth(self):
+        """
+
+        :return: bandwidth for each links using a distribution please add args
+        """
+
+    #TODO: timeline_for_clients by Jingyan or Heyhao
+    def timeline_for_clients(self,bandwidth_matrix, seg_selection_decision):
+        """
+
+        :param bandwidth_matrix:
+        :param seg_selection_decesion:
+        :return: timeline matrix, transmission_latency_of_links
+        """
+
+    #TODO:
+    def timeline_update(self,timeline_matrix):
+        """
+
+        :param timeline_matrix:
+        :return: timeline_matrix
+        """
+
+    #TODO:
+    def get_seg_selection_decision(self):
+        """
+
+        :return: seg_selection_decision: the segment selection results of all the clients
+        """
+
     def select_clients(self, my_round, possible_clients, num_clients=20):
         """Selects num_clients clients randomly from possible_clients.
         
