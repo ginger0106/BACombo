@@ -4,42 +4,21 @@ from baseline_constants import BYTES_WRITTEN_KEY, BYTES_READ_KEY, LOCAL_COMPUTAT
 
 class Server:
     
-    def __init__(self, client_model):
+    def __init__(self, client_model, clients_num):
         self.client_model = client_model
         self.model = client_model.get_params()
         self.selected_clients = []
         self.updates = []
-
-    #TODO：
-    def init_bandwidth(self):
-        """
-
-        :return: bandwidth for each links using a distribution please add args
-        """
-
-    #TODO: timeline_for_clients by Jingyan or Heyhao
-    def timeline_for_clients(self,bandwidth_matrix, seg_selection_decision):
-        """
-
-        :param bandwidth_matrix:
-        :param seg_selection_decesion:
-        :return: timeline matrix, transmission_latency_of_links
-        """
-
-    #TODO:
-    def timeline_update(self,timeline_matrix):
-        """
-
-        :param timeline_matrix:
-        :return: timeline_matrix
-        """
-
-    #TODO:
-    def get_seg_selection_decision(self):
-        """
-
-        :return: seg_selection_decision: the segment selection results of all the clients
-        """
+        self.clients_num = clients_num
+        self.bandwidth = []
+        for i in range(self.clients_num):
+            a = []
+            for j in range(self.clients_num):
+                if i == j:
+                    a.append(0)
+                else:
+                    a.append(np.random.randint(1, 100))
+            self.bandwidth.append(a)
 
     def select_clients(self, my_round, possible_clients, num_clients=20):
         """Selects num_clients clients randomly from possible_clients.
@@ -56,6 +35,7 @@ class Server:
         num_clients = min(num_clients, len(possible_clients))
         np.random.seed(my_round)
         self.selected_clients = np.random.choice(possible_clients, num_clients, replace=False)
+        #self.selected_clients = possible_clients
 
         return [(c.num_train_samples, c.num_test_samples) for c in self.selected_clients]
 
@@ -110,6 +90,7 @@ class Server:
         self.model = averaged_soln
         self.updates = []
 
+
     def test_model(self, clients_to_test, set_to_use='test'):
         """Tests self.model on given clients.
 
@@ -151,7 +132,7 @@ class Server:
         """Saves the server model on checkpoints/dataset/model.ckpt."""
         # Save server model
         self.client_model.set_params(self.model)
-        model_sess =  self.client_model.sess
+        model_sess = self.client_model.sess
         return self.client_model.saver.save(model_sess, path)
 
     def close_model(self):

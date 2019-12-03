@@ -1,32 +1,33 @@
 import random
 import warnings
+import numpy as np
+import heapq
+import argparse
+from utils.args import parse_args
+
+latest_n = 5 #取最近五个预测带宽取平均
+init_pridict_bandwidth = 50 #初始化预测带宽的大小
+e = 0.5
 
 
 class Client:
     
-    def __init__(self, client_id, group=None, train_data={'x' : [],'y' : []}, eval_data={'x' : [],'y' : []}, model=None):
+    def __init__(self, idx, clients_num, client_id, group=None, train_data={'x': [], 'y': []}, eval_data={'x': [], 'y': []}, model=None):
         self._model = model
         self.id = client_id # integer
+        self.idx = idx
+        self.clients_num = clients_num
         self.group = group
         self.train_data = train_data
         self.eval_data = eval_data
-
-    #TODO:
-    def seg_selection(self):
-        """
-
-        :return: seg_selected: seg index array R*S
-        """
-        pass
-
-    #TODO:
-    def seg_aggregation(self,seg_selected):
-        """
-
-        :param seg_selected:
-        :return: weights
-        """
-        pass
+        self.pridict_bandwidth = []  #初始化该client到其他所有节点的预测带宽
+        for i in range(self.clients_num):
+            self.pridict_bandwidth.append([init_pridict_bandwidth])
+        self.updates = []
+        self.model = model.get_params()
+        self.train_time = []
+        self.transfer_time = []
+        self.args = parse_args()
 
     def train(self, num_epochs=1, batch_size=10, minibatch=None):
         """Trains on self.model using the client's train_data.
@@ -55,7 +56,78 @@ class Client:
             num_epochs = 1
             comp, update = self.model.train(data, num_epochs, num_data)
         num_train_samples = len(data['y'])
+        self.updates.append((num_train_samples, update))
         return comp, num_train_samples, update
+
+    def update_model(self, replica, segment):
+        trive_model = []
+        weight_list = []
+        for p in range(segment):
+            target = self.choose_best_segment(e, replica)
+            segment_weight = self.get_segments(self.updates[target[idx]][1], p)
+            for k in range(replica):
+                segment_weight += self.get_segments(self.updates[target[k]][1], p)
+            segment_weight /= replica + 1
+            weight_list.extend(segment_weight)
+            trive_model.append(self.reconstruct(weight_list))
+
+        self.model.set_params(np.array(trive_model))
+
+        self.updates = []
+
+    def choose_best_segment(self, e, replica):
+        num = np.random.rand()
+        target = []
+        if self.args.algorithm == 'BACombo':
+            if num < e:
+                for i in range(replica):
+                    a = np.random.randint(0, self.clients_num)
+                    while a == self.idx or a in target:
+                        a = np.random.randint(0, self.clients_num)
+                    target.append(a)
+            else:
+                pridict = []
+                for bandwidth in self.pridict_bandwidth:
+                    if len(bandwidth) < latest_n:
+                        pridict.append(np.mean(bandwidth))
+                    else:
+                        pridict.append(np.mean(bandwidth[-latest_n:]))
+                target = list(map(pridict.index, heapq.nlargest(latest_n, pridict)))
+        else:
+            for i in range(replica):
+                a = np.random.randint(0, self.clients_num)
+                while a == self.idx or a in target:
+                    a = np.random.randint(0, self.clients_num)
+                target.append(a)
+        return target
+
+    def get_segments(self, model_weights, seg):
+        flat_m = []
+        self.shape_list = []
+        for x in model_weights:
+            self.shape_list.append(x.shape)
+            flat_m.extend(list(x.flatten()))
+
+        seg_length = len(flat_m) // self.segments + 1
+
+        return flat_m[seg*seg_length:(seg+1)*seg_length]
+
+    def reconstruct(self, flat_m):
+        result = []
+        current_pos = 0
+        for shape in self.shape_list:
+            total_number = 1
+            for i in shape:
+                total_number *= i
+            result.append(np.array(flat_m[current_pos:current_pos+total_number]).reshape(shape))
+            current_pos += total_number
+        return np.array(result)
+
+    def update_bandwidth(self):
+        time = self.transfer_time[-1]
+        for i in range(self.clients_num):
+            if time[i] != -1:
+                self.pridict_bandwidth[i].append(1/time[i])
 
     def test(self, set_to_use='test'):
         """Tests self.model on self.test_data.
@@ -109,7 +181,6 @@ class Client:
         if self.eval_data is not  None:
             test_size = len(self.eval_data['y'])
         return train_size + test_size
-
 
     @property
     def model(self):
