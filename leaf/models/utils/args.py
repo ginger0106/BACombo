@@ -1,8 +1,7 @@
 import argparse
 
-from .constants import DATASETS, SIM_TIMES
+from .constants import DATASETS, ALGORITHM, SIM_TIMES
 
-#TODO: add baseline arg:[fedavg, gossip, combo, bacombo]
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -16,6 +15,19 @@ def parse_args():
                     help='name of model;',
                     type=str,
                     required=True)
+    parser.add_argument('-algorithm',
+                        help='name of algorithm;',
+                        type=str,
+                        choices=ALGORITHM,
+                        required=True)
+    parser.add_argument('--replica',
+                        help='number to replica;',
+                        type=int,
+                        default=5)
+    parser.add_argument('--segment',
+                        help='number of segments;',
+                        type=int,
+                        default=10)
     parser.add_argument('--num-rounds',
                     help='number of rounds to simulate;',
                     type=int,
