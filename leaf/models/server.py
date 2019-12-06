@@ -1,6 +1,8 @@
 import numpy as np
-
 from baseline_constants import BYTES_WRITTEN_KEY, BYTES_READ_KEY, LOCAL_COMPUTATIONS_KEY
+
+TRAINING_TIME = 30
+
 
 class Server:
     
@@ -11,6 +13,11 @@ class Server:
         self.updates = []
         self.clients_num = clients_num
         self.bandwidth = []
+        self.transfer_time = []
+        self.s
+        self.init_bandwidth()
+
+    def init_bandwidth(self):
         for i in range(self.clients_num):
             a = []
             for j in range(self.clients_num):
@@ -137,3 +144,7 @@ class Server:
 
     def close_model(self):
         self.client_model.close()
+
+    def env(self, my_round):
+
+        return self.transfer_time

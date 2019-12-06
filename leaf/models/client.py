@@ -64,7 +64,7 @@ class Client:
         weight_list = []
         for p in range(segment):
             target = self.choose_best_segment(e, replica)
-            segment_weight = self.get_segments(self.updates[target[idx]][1], p)
+            segment_weight = self.get_segments(self.updates[target[self.idx]][1], p)
             for k in range(replica):
                 segment_weight += self.get_segments(self.updates[target[k]][1], p)
             segment_weight /= replica + 1
