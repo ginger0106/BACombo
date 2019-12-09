@@ -57,24 +57,27 @@ def main():
     tf.reset_default_graph()
     client_model = ClientModel(args.seed, *model_params)
 
+
     # Create clients
     clients = setup_clients(args.dataset, client_model)
+    # Create server
+    server = Server(client_model, len(clients))
     client_ids, client_groups, client_num_samples = server.get_clients_info(clients)
     print('Clients in Total: %d' % len(clients))
 
     if args.algorithm == 'fedavg':
         clients_per_round = args.clients_per_round if args.clients_per_round != -1 else tup[2]
+        # Initial status
+        print('--- Random Initialization ---')
+        stat_writer_fn = get_stat_writer_function(client_ids, client_groups, client_num_samples, args)
+        sys_writer_fn = get_sys_writer_function(args)
+        print_stats(0, server, clients, client_num_samples, args, stat_writer_fn)
     else:
         clients_per_round = len(clients)
 
-    # Create server
-    server = Server(client_model, len(clients))
 
-    # Initial status
-    print('--- Random Initialization ---')
-    stat_writer_fn = get_stat_writer_function(client_ids, client_groups, client_num_samples, args)
-    sys_writer_fn = get_sys_writer_function(args)
-    print_stats(0, server, clients, client_num_samples, args, stat_writer_fn)
+
+
 
     # Simulate training
     for i in range(num_rounds):
@@ -92,18 +95,19 @@ def main():
             server.update_model()
         else:
             for c in clients:
-                c.train(num_epochs=args.num_epochs, batch_size=args.batch_size, minibatch=args.minibatch)
+                c.train(server, num_epochs=args.num_epochs, batch_size=args.batch_size, minibatch=args.minibatch)
             if args.algorithm == 'gossip':
                 for c in clients:
-                    c.update_model(args.replica, 1)
+                    c.update_model(args.replica, 1, server)
             elif args.algorithm == 'combo':
                 for c in clients:
-                    c.update_model(args.replica, args.segment)
+                    c.update_model(args.replica, args.segment, server)
             elif args.algorithm == 'BACombo':
                 for c in clients:
-                    c.update_model(args.replica, args.segment)
+                    c.update_model(args.replica, args.segment, server)
                 for c in clients:
                     c.update_bandwidth()
+            server.updates = []
             server.model = clients[0].model
 
         # Test model
