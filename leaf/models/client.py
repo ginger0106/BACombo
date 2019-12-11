@@ -24,12 +24,17 @@ class Client:
         for i in range(self.clients_num):
             self.pridict_bandwidth.append([init_pridict_bandwidth])
         self.updates = []
-        self.model = model.get_params()
+        self.model1 = model.get_params()
         self.train_time = []
         self.transfer_time = []
+        for i in range(clients_num):
+            a = []
+            for j in range(clients_num):
+                a.append(0.02)
+            self.transfer_time.append(a)
         self.args = parse_args()
 
-    def train(self, num_epochs=1, batch_size=10, minibatch=None):
+    def train(self, server, num_epochs=1, batch_size=10, minibatch=None):
         """Trains on self.model using the client's train_data.
 
         Args:
@@ -57,23 +62,27 @@ class Client:
             comp, update = self.model.train(data, num_epochs, num_data)
         num_train_samples = len(data['y'])
         self.updates.append((num_train_samples, update))
+        server.updates.append((num_train_samples, update))
         return comp, num_train_samples, update
 
-    def update_model(self, replica, segment):
+    def update_model(self, replica, segment, server):
         trive_model = []
         weight_list = []
         for p in range(segment):
             target = self.choose_best_segment(e, replica)
-            segment_weight = self.get_segments(self.updates[target[self.idx]][1], p)
+            segment_weight = self.get_segments(server.updates[self.idx][1], p)
             for k in range(replica):
-                segment_weight += self.get_segments(self.updates[target[k]][1], p)
-            segment_weight /= replica + 1
+                segment_weight += self.get_segments(server.updates[target[k]][1], p)
+            segment_weight = np.array(segment_weight)
+            segment_weight = segment_weight/(replica + 1)
             weight_list.extend(segment_weight)
-            trive_model.append(self.reconstruct(weight_list))
+        weight_list = np.array(weight_list)
+        trive_model.append(self.reconstruct(weight_list))
 
-        self.model.set_params(np.array(trive_model))
+        self.model1 = np.array(trive_model)
 
         self.updates = []
+        
 
     def choose_best_segment(self, e, replica):
         num = np.random.rand()
@@ -107,14 +116,14 @@ class Client:
         for x in model_weights:
             self.shape_list.append(x.shape)
             flat_m.extend(list(x.flatten()))
-
-        seg_length = len(flat_m) // self.segments + 1
+        seg_length = len(flat_m) // self.args.segment + 1
 
         return flat_m[seg*seg_length:(seg+1)*seg_length]
 
     def reconstruct(self, flat_m):
         result = []
         current_pos = 0
+        print('222', self.shape_list)
         for shape in self.shape_list:
             total_number = 1
             for i in shape:
