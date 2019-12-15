@@ -44,6 +44,62 @@ In traditional distributed ML scenario within the datacenter, the gossip-based s
 Thus as a compromise, we set a hyper-parameter \textit{Model Replica} $R$ which represents the number of the mixed model gathered by segmented pulling. To rebuild $R$ mixed models, the worker will pull $S \times R$ segments from peers. Thus increasing the value of $R$ means more segments have to be transferred through the network, which may cause bandwidth overhead. But this is necessary to accelerate the propagation and ensure the model quality. Since there is no centralized server bottleneck, the model training speed could still be faster even with extra transmission.
 
 
+\subsubsection{Bandwidth-Aware Client Selection}
+\begin{algorithm}[!t]
+
+\caption{Bandwidth-Aware Combo (BACombo)}
+
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+\SetKwFunction{SP}{{SegPulling}}
+\SetKwFunction{SA}{{SegAggregation}}
+
+
+\begin{algorithmic}[1]
+\REQUIRE $K, T, \eta, E, \widetilde{w}_0, N, S, \epsilon $
+
+\STATE \textbf{Each worker $i$ executes:}
+\STATE $ B \leftarrow \mathbf{0} $
+
+\FOR {$t = 0, ...,T-1$}
+    \STATE $r_t \leftarrow Random()$ 
+    \STATE updates ${ w}_{t}$ for $E$ epoches of SGD on $F_i$  with step size $\eta$ to obtain ${ w}_{t+1}$
+    \IF{ $r_t < \epsilon $}{
+        \STATE %$ \{{w}_{t,k}^\prime\}, J, \{D_j\} \leftarrow $ 
+        \SP{$Random(),K, N,i$}
+        \STATE update $B$ based on the \textbf{BandwidthPrediction}$(J)$}
+    \ELSE {
+        \STATE %$ \{{w}_{t,k}^\prime\}, J, \{D_j\} \leftarrow $ 
+        \SP{$Greedy(),K, N,i$}
+    } 
+    \ENDIF
+    \STATE $\widetilde{{w}}_{t+1} \leftarrow$ \textbf{SegAggregation} $(\{{w}_{t,k}^\prime\},{{w}}_{t+1},J ,\{D_j\})$
+\ENDFOR
+\item[]
+
+\STATE \SP{$k,w_{t}$}//Run on worker $k$
+{
+    \STATE \quad worker $k$ updates $w_t$ for $E$ epoches of SGD on $F_k$ \\ \quad with step size $\eta$ to obtain $w_{t+1}$
+\RETURN $w_{t+1}$ 
+}
+
+\item[]
+
+\STATE \SA{$k,w_{t}$}//Run on worker $k$
+{
+    \STATE \quad worker $k$ updates $w_t$ for $E$ epoches of SGD on $F_k$ \\ \quad with step size $\eta$ to obtain $w_{t+1}$
+\RETURN $w_{t+1}$ 
+}
+
+\end{algorithmic}	\label{BACombo} 
+\end{algorithm}
+
+            % \STATE worker selects a subset $S_{t}$ of S segments at random (each segments $s$ is chosen from  with probability $p_s$)
+            
+        %             \FOR {$ k = 1, ..., K$}
+            
+        % \ENDFOR
+                % \STATE worker selects a subset $S_{t, s, r}$ of  workers at random (each worker $k$ is chosen with probability $p_k$)
 %The \sys worker updates its local model using multiple "local models" from peers, each local model is a composition of model segments from different peers, we call the composition \textit{Model Replica}.
 
 %
