@@ -1,6 +1,37 @@
 \section{Related work}
 \textbf{Distributed ML}
 Conventional distributed machine learning systems are centralized, workers periodically send the local updates to a (a set of) parameter servers (PS), such as SparkNet\cite{moritz2016sparknet:}, Tensorflow\cite{abadi2016tensorflow:} and traditional federated learning systems \cite{konecny2015federated,konevcny2016federated}. To avoid bottleneck and single point failure, \cite{li2014scaling,mlsys2019towards} aim to scale PS for  better network utilization. Although these scaling methods could increase the accumulative bandwidth at the server side, they are still suffering the long convergence time when the network is poor.
+\begin{algorithm}[!t]
+
+\caption{Federated Averaging (FedAvg)}
+
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
+\begin{algorithmic}[1]
+\SetKwFunction{FC}{{ClientUpdatae}}
+\REQUIRE $K, T, \eta, E, w_0, N, n, n_k, p_k,  k = 1,...,N $
+
+\STATE \textbf{Server executes:}
+\FOR {$t = 0, ...,T-1$}
+    \STATE server selects a subset $S_t$ of K workers at random (each worker $k$ is chosen with probability $p_k$)
+    \STATE send $w_t$ to all chosen workers
+    \FOR{each client $k \in S_t$ in parallel}
+        \STATE $w^k_{t+1} \leftarrow$\FC{$k,w_{t}$}
+    \ENDFOR
+    \STATE $w_{t+1} \leftarrow \sum ^{K}_{k=1} \frac{n_k}{n}w^k_{t+1}$
+\ENDFOR
+
+\item[]
+
+\STATE \FC{$k,w_{t}$}//Run on worker $k$
+    {\STATE \quad worker $k$ updates $w_t$ for $E$ epoches of SGD on $F_k$ \\ \quad with step size $\eta$ to obtain $w_{t+1}$
+\RETURN $w_{t+1}$ }
+
+
+\end{algorithmic}	\label{Fedavg} 
+\end{algorithm}
+
 
 An alternative solution is decentralized architecture, the workers exchange updates directly using all-reduce scheme, with a communication cost $O(n^2)$ for $n$ workers. To reduce the huge communication costs, an intuitive approach is to take the advantage of topology. Baidu first introduced Ring-allreduce \cite{allreduce}, which is a bandwidth-optimal way to do an allreduce. The workers involved are arranged in a ring, each worker send gradients to the next clockwise worker and receives from the previous one. In this way, it reduces the communication complexity to linear growth in scale. similarly, the tree \cite{li2015malt:} and graph \cite{agarwal2014a} topologies are proposed to reduce the communication cost. However, these approaches may need multiple hops between workers, resulting in slow convergence. Instead of topology-based method, Ako \cite{watcharapichat2016ako:} propose a partial gradient updates method. In each synchronization round, each worker sends a gradient partition to every other worker. Obviously, Ako reduces the synchronization time and the communication overhead depends on the partition size and the worker number. 
  

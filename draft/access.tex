@@ -2,6 +2,7 @@
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{algorithmic}
+\usepackage{algorithm2e}
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{times}
@@ -41,21 +42,20 @@
 \history{Date of publication xxxx 00, 0000, date of current version xxxx 00, 0000.}
 \doi{10.1109/ACCESS.2017.DOI}
 
-\title{Preparation of Papers for IEEE ACCESS}
-\author{\uppercase{First A. Author}\authorrefmark{1}, \IEEEmembership{Fellow, IEEE},
-\uppercase{Second B. Author\authorrefmark{2}, and Third C. Author,
-Jr}.\authorrefmark{3},
-\IEEEmembership{Member, IEEE}}
-\address[1]{National Institute of Standards and 
-Technology, Boulder, CO 80305 USA (e-mail: author@boulder.nist.gov)}
-\address[2]{Department of Physics, Colorado State University, Fort Collins, 
-CO 80523 USA (e-mail: author@lamar.colostate.edu)}
-\address[3]{Electrical Engineering Department, University of Colorado, Boulder, CO 
-80309 USA}
-\tfootnote{This paragraph of the first footnote will contain support 
-information, including sponsor and financial support acknowledgment. For 
-example, ``This work was supported in part by the U.S. Department of 
-Commerce under Grant BS123456.''}
+
+
+\title{Bandwidth-Aware Decentralized Federated Learning}
+\author{\uppercase{Jingyan Jiang}\authorrefmark{1},
+\uppercase{Chenghao Hu\authorrefmark{2}, Zhi Wang\authorrefmark{3} and Liang Hu}.\authorrefmark{4}}
+\address[1]{College of Computer Science and Technology, Jilin University (e-mail: jiangjy14@mails.jlu.edu.cn)}
+\address[2]{Graduate School at Shenzhen, Tsinghua University (huch16@mails.tsinghua.edu.cn)}
+\address[3]{Graduate School at Shenzhen, Tsinghua University (wangzhi@sz.tsinghua.edu.cn)}
+\address[4]{College of Computer Science and Technology, Jilin University (hul@jlu.edu.cn)}
+
+% \tfootnote{This paragraph of the first footnote will contain support 
+% information, including sponsor and financial support acknowledgment. For 
+% example, ``This work was supported in part by the U.S. Department of 
+% Commerce under Grant BS123456.''}
 
 \markboth
 {Author \headeretal: Preparation of Papers for IEEE TRANSACTIONS and JOURNALS}
@@ -85,6 +85,8 @@ e-mail to keywords@ieee.org or visit \underline
 \input{Evaluation.tex}
 \input{Conclusion.tex}
 \input{analysis.tex}
+\bibliographystyle{IEEEtran}
+\bibliography{ref.bib}
 
 
 %\section{Introduction}
@@ -671,247 +673,247 @@ e-mail to keywords@ieee.org or visit \underline
 %\item Papers that describe ongoing work or announce the latest technical achievement, which are suitable for presentation at a professional conference, may not be appropriate for publication.
 %\end{enumerate}
 
-\section{Reference Examples}
+% \section{Reference Examples}
 
-\begin{itemize}
+% \begin{itemize}
 
-\item \emph{Basic format for books:}\\
-J. K. Author, ``Title of chapter in the book,'' in \emph{Title of His Published Book, x}th ed. City of Publisher, (only U.S. State), Country: Abbrev. of Publisher, year, ch. $x$, sec. $x$, pp. \emph{xxx--xxx.}\\
-See \cite{b1,b2}.
+% \item \emph{Basic format for books:}\\
+% J. K. Author, ``Title of chapter in the book,'' in \emph{Title of His Published Book, x}th ed. City of Publisher, (only U.S. State), Country: Abbrev. of Publisher, year, ch. $x$, sec. $x$, pp. \emph{xxx--xxx.}\\
+% See \cite{b1,b2}.
 
-\item \emph{Basic format for periodicals:}\\
-J. K. Author, ``Name of paper,'' \emph{Abbrev. Title of Periodical}, vol. \emph{x, no}. $x, $pp\emph{. xxx--xxx, }Abbrev. Month, year, DOI. 10.1109.\emph{XXX}.123456.\\
-See \cite{b3}--\cite{b5}.
+% \item \emph{Basic format for periodicals:}\\
+% J. K. Author, ``Name of paper,'' \emph{Abbrev. Title of Periodical}, vol. \emph{x, no}. $x, $pp\emph{. xxx--xxx, }Abbrev. Month, year, DOI. 10.1109.\emph{XXX}.123456.\\
+% See \cite{b3}--\cite{b5}.
 
-\item \emph{Basic format for reports:}\\
-J. K. Author, ``Title of report,'' Abbrev. Name of Co., City of Co., Abbrev. State, Country, Rep. \emph{xxx}, year.\\
-See \cite{b6,b7}.
+% \item \emph{Basic format for reports:}\\
+% J. K. Author, ``Title of report,'' Abbrev. Name of Co., City of Co., Abbrev. State, Country, Rep. \emph{xxx}, year.\\
+% See \cite{b6,b7}.
 
-\item \emph{Basic format for handbooks:}\\
-\emph{Name of Manual/Handbook, x} ed., Abbrev. Name of Co., City of Co., Abbrev. State, Country, year, pp. \emph{xxx--xxx.}\\
-See \cite{b8,b9}.
+% \item \emph{Basic format for handbooks:}\\
+% \emph{Name of Manual/Handbook, x} ed., Abbrev. Name of Co., City of Co., Abbrev. State, Country, year, pp. \emph{xxx--xxx.}\\
+% See \cite{b8,b9}.
 
-\item \emph{Basic format for books (when available online):}\\
-J. K. Author, ``Title of chapter in the book,'' in \emph{Title of
-Published Book}, $x$th ed. City of Publisher, State, Country: Abbrev.
-of Publisher, year, ch. $x$, sec. $x$, pp. \emph{xxx--xxx}. [Online].
-Available: \underline{http://www.web.com}\\
-See \cite{b10}--\cite{b13}.
+% \item \emph{Basic format for books (when available online):}\\
+% J. K. Author, ``Title of chapter in the book,'' in \emph{Title of
+% Published Book}, $x$th ed. City of Publisher, State, Country: Abbrev.
+% of Publisher, year, ch. $x$, sec. $x$, pp. \emph{xxx--xxx}. [Online].
+% Available: \underline{http://www.web.com}\\
+% See \cite{b10}--\cite{b13}.
 
-\item \emph{Basic format for journals (when available online):}\\
-J. K. Author, ``Name of paper,'' \emph{Abbrev. Title of Periodical}, vol. $x$, no. $x$, pp. \emph{xxx--xxx}, Abbrev. Month, year. Accessed on: Month, Day, year, DOI: 10.1109.\emph{XXX}.123456, [Online].\\
-See \cite{b14}--\cite{b16}.
+% \item \emph{Basic format for journals (when available online):}\\
+% J. K. Author, ``Name of paper,'' \emph{Abbrev. Title of Periodical}, vol. $x$, no. $x$, pp. \emph{xxx--xxx}, Abbrev. Month, year. Accessed on: Month, Day, year, DOI: 10.1109.\emph{XXX}.123456, [Online].\\
+% See \cite{b14}--\cite{b16}.
 
-\item \emph{Basic format for papers presented at conferences (when available online): }\\
-J.K. Author. (year, month). Title. presented at abbrev. conference title. [Type of Medium]. Available: site/path/file\\
-See \cite{b17}.
+% \item \emph{Basic format for papers presented at conferences (when available online): }\\
+% J.K. Author. (year, month). Title. presented at abbrev. conference title. [Type of Medium]. Available: site/path/file\\
+% See \cite{b17}.
 
-\item \emph{Basic format for reports and handbooks (when available online):}\\
-J. K. Author. ``Title of report,'' Company. City, State, Country. Rep. no., (optional: vol./issue), Date. [Online] Available: site/path/file\\
-See \cite{b18,b19}.
+% \item \emph{Basic format for reports and handbooks (when available online):}\\
+% J. K. Author. ``Title of report,'' Company. City, State, Country. Rep. no., (optional: vol./issue), Date. [Online] Available: site/path/file\\
+% See \cite{b18,b19}.
 
-\item \emph{Basic format for computer programs and electronic documents (when available online): }\\
-Legislative body. Number of Congress, Session. (year, month day). \emph{Number of bill or resolution}, \emph{Title}. [Type of medium]. Available: site/path/file\\
-\textbf{\emph{NOTE: }ISO recommends that capitalization follow the accepted practice for the language or script in which the information is given.}\\
-See \cite{b20}.
+% \item \emph{Basic format for computer programs and electronic documents (when available online): }\\
+% Legislative body. Number of Congress, Session. (year, month day). \emph{Number of bill or resolution}, \emph{Title}. [Type of medium]. Available: site/path/file\\
+% \textbf{\emph{NOTE: }ISO recommends that capitalization follow the accepted practice for the language or script in which the information is given.}\\
+% See \cite{b20}.
 
-\item \emph{Basic format for patents (when available online):}\\
-Name of the invention, by inventor's name. (year, month day). Patent Number [Type of medium]. Available: site/path/file\\
-See \cite{b21}.
+% \item \emph{Basic format for patents (when available online):}\\
+% Name of the invention, by inventor's name. (year, month day). Patent Number [Type of medium]. Available: site/path/file\\
+% See \cite{b21}.
 
-\item \emph{Basic format}\emph{for conference proceedings (published):}\\
-J. K. Author, ``Title of paper,'' in \emph{Abbreviated Name of Conf.}, City of Conf., Abbrev. State (if given), Country, year, pp. \emph{xxxxxx.}\\
-See \cite{b22}.
+% \item \emph{Basic format}\emph{for conference proceedings (published):}\\
+% J. K. Author, ``Title of paper,'' in \emph{Abbreviated Name of Conf.}, City of Conf., Abbrev. State (if given), Country, year, pp. \emph{xxxxxx.}\\
+% See \cite{b22}.
 
-\item \emph{Example for papers presented at conferences (unpublished):}\\
-See \cite{b23}.
+% \item \emph{Example for papers presented at conferences (unpublished):}\\
+% See \cite{b23}.
 
-\item \emph{Basic format for patents}$:$\\
-J. K. Author, ``Title of patent,'' U.S. Patent \emph{x xxx xxx}, Abbrev. Month, day, year.\\
-See \cite{b24}.
+% \item \emph{Basic format for patents}$:$\\
+% J. K. Author, ``Title of patent,'' U.S. Patent \emph{x xxx xxx}, Abbrev. Month, day, year.\\
+% See \cite{b24}.
 
-\item \emph{Basic format for theses (M.S.) and dissertations (Ph.D.):}
-\begin{enumerate}
-\item J. K. Author, ``Title of thesis,'' M.S. thesis, Abbrev. Dept., Abbrev. Univ., City of Univ., Abbrev. State, year.
-\item J. K. Author, ``Title of dissertation,'' Ph.D. dissertation, Abbrev. Dept., Abbrev. Univ., City of Univ., Abbrev. State, year.
-\end{enumerate}
-See \cite{b25,b26}.
+% \item \emph{Basic format for theses (M.S.) and dissertations (Ph.D.):}
+% \begin{enumerate}
+% \item J. K. Author, ``Title of thesis,'' M.S. thesis, Abbrev. Dept., Abbrev. Univ., City of Univ., Abbrev. State, year.
+% \item J. K. Author, ``Title of dissertation,'' Ph.D. dissertation, Abbrev. Dept., Abbrev. Univ., City of Univ., Abbrev. State, year.
+% \end{enumerate}
+% See \cite{b25,b26}.
 
-\item \emph{Basic format for the most common types of unpublished references:}
-\begin{enumerate}
-\item J. K. Author, private communication, Abbrev. Month, year.
-\item J. K. Author, ``Title of paper,'' unpublished.
-\item J. K. Author, ``Title of paper,'' to be published.
-\end{enumerate}
-See \cite{b27}--\cite{b29}.
+% \item \emph{Basic format for the most common types of unpublished references:}
+% \begin{enumerate}
+% \item J. K. Author, private communication, Abbrev. Month, year.
+% \item J. K. Author, ``Title of paper,'' unpublished.
+% \item J. K. Author, ``Title of paper,'' to be published.
+% \end{enumerate}
+% See \cite{b27}--\cite{b29}.
 
-\item \emph{Basic formats for standards:}
-\begin{enumerate}
-\item \emph{Title of Standard}, Standard number, date.
-\item \emph{Title of Standard}, Standard number, Corporate author, location, date.
-\end{enumerate}
-See \cite{b30,b31}.
+% \item \emph{Basic formats for standards:}
+% \begin{enumerate}
+% \item \emph{Title of Standard}, Standard number, date.
+% \item \emph{Title of Standard}, Standard number, Corporate author, location, date.
+% \end{enumerate}
+% See \cite{b30,b31}.
 
-\item \emph{Article number in~reference examples:}\\
-See \cite{b32,b33}.
+% \item \emph{Article number in~reference examples:}\\
+% See \cite{b32,b33}.
 
-\item \emph{Example when using et al.:}\\
-See \cite{b34}.
+% \item \emph{Example when using et al.:}\\
+% See \cite{b34}.
 
-\end{itemize}
+% \end{itemize}
 
-\begin{thebibliography}{00}
+% \begin{thebibliography}{00}
 
-\bibitem{b1} G. O. Young, ``Synthetic structure of industrial plastics,'' in \emph{Plastics,} 2\textsuperscript{nd} ed., vol. 3, J. Peters, Ed. New York, NY, USA: McGraw-Hill, 1964, pp. 15--64.
+% \bibitem{b1} G. O. Young, ``Synthetic structure of industrial plastics,'' in \emph{Plastics,} 2\textsuperscript{nd} ed., vol. 3, J. Peters, Ed. New York, NY, USA: McGraw-Hill, 1964, pp. 15--64.
 
-\bibitem{b2} W.-K. Chen, \emph{Linear Networks and Systems.} Belmont, CA, USA: Wadsworth, 1993, pp. 123--135.
+% \bibitem{b2} W.-K. Chen, \emph{Linear Networks and Systems.} Belmont, CA, USA: Wadsworth, 1993, pp. 123--135.
 
-\bibitem{b3} J. U. Duncombe, ``Infrared navigation---Part I: An assessment of feasibility,'' \emph{IEEE Trans. Electron Devices}, vol. ED-11, no. 1, pp. 34--39, Jan. 1959, 10.1109/TED.2016.2628402.
+% \bibitem{b3} J. U. Duncombe, ``Infrared navigation---Part I: An assessment of feasibility,'' \emph{IEEE Trans. Electron Devices}, vol. ED-11, no. 1, pp. 34--39, Jan. 1959, 10.1109/TED.2016.2628402.
 
-\bibitem{b4} E. P. Wigner, ``Theory of traveling-wave optical laser,'' \emph{Phys. Rev}., vol. 134, pp. A635--A646, Dec. 1965.
+% \bibitem{b4} E. P. Wigner, ``Theory of traveling-wave optical laser,'' \emph{Phys. Rev}., vol. 134, pp. A635--A646, Dec. 1965.
 
-\bibitem{b5} E. H. Miller, ``A note on reflector arrays,'' \emph{IEEE Trans. Antennas Propagat}., to be published.
+% \bibitem{b5} E. H. Miller, ``A note on reflector arrays,'' \emph{IEEE Trans. Antennas Propagat}., to be published.
 
-\bibitem{b6} E. E. Reber, R. L. Michell, and C. J. Carter, ``Oxygen absorption in the earth's atmosphere,'' Aerospace Corp., Los Angeles, CA, USA, Tech. Rep. TR-0200 (4230-46)-3, Nov. 1988.
+% \bibitem{b6} E. E. Reber, R. L. Michell, and C. J. Carter, ``Oxygen absorption in the earth's atmosphere,'' Aerospace Corp., Los Angeles, CA, USA, Tech. Rep. TR-0200 (4230-46)-3, Nov. 1988.
 
-\bibitem{b7} J. H. Davis and J. R. Cogdell, ``Calibration program for the 16-foot antenna,'' Elect. Eng. Res. Lab., Univ. Texas, Austin, TX, USA, Tech. Memo. NGL-006-69-3, Nov. 15, 1987.
+% \bibitem{b7} J. H. Davis and J. R. Cogdell, ``Calibration program for the 16-foot antenna,'' Elect. Eng. Res. Lab., Univ. Texas, Austin, TX, USA, Tech. Memo. NGL-006-69-3, Nov. 15, 1987.
 
-\bibitem{b8} \emph{Transmission Systems for Communications}, 3\textsuperscript{rd} ed., Western Electric Co., Winston-Salem, NC, USA, 1985, pp. 44--60.
+% \bibitem{b8} \emph{Transmission Systems for Communications}, 3\textsuperscript{rd} ed., Western Electric Co., Winston-Salem, NC, USA, 1985, pp. 44--60.
 
-\bibitem{b9} \emph{Motorola Semiconductor Data Manual}, Motorola Semiconductor Products Inc., Phoenix, AZ, USA, 1989.
+% \bibitem{b9} \emph{Motorola Semiconductor Data Manual}, Motorola Semiconductor Products Inc., Phoenix, AZ, USA, 1989.
 
-\bibitem{b10} G. O. Young, ``Synthetic structure of industrial
-plastics,'' in Plastics, vol. 3, Polymers of Hexadromicon, J. Peters,
-Ed., 2\textsuperscript{nd} ed. New York, NY, USA: McGraw-Hill, 1964, pp. 15-64.
-[Online]. Available:
-\underline{http://www.bookref.com}.
+% \bibitem{b10} G. O. Young, ``Synthetic structure of industrial
+% plastics,'' in Plastics, vol. 3, Polymers of Hexadromicon, J. Peters,
+% Ed., 2\textsuperscript{nd} ed. New York, NY, USA: McGraw-Hill, 1964, pp. 15-64.
+% [Online]. Available:
+% \underline{http://www.bookref.com}.
 
-\bibitem{b11} \emph{The Founders' Constitution}, Philip B. Kurland
-and Ralph Lerner, eds., Chicago, IL, USA: Univ. Chicago Press, 1987.
-[Online]. Available: \underline{http://press-pubs.uchicago.edu/founders/}
+% \bibitem{b11} \emph{The Founders' Constitution}, Philip B. Kurland
+% and Ralph Lerner, eds., Chicago, IL, USA: Univ. Chicago Press, 1987.
+% [Online]. Available: \underline{http://press-pubs.uchicago.edu/founders/}
 
-\bibitem{b12} The Terahertz Wave eBook. ZOmega Terahertz Corp., 2014.
-[Online]. Available:
-\underline{http://dl.z-thz.com/eBook/zomega\_ebook\_pdf\_1206\_sr.pdf}. Accessed on: May 19, 2014.
+% \bibitem{b12} The Terahertz Wave eBook. ZOmega Terahertz Corp., 2014.
+% [Online]. Available:
+% \underline{http://dl.z-thz.com/eBook/zomega\_ebook\_pdf\_1206\_sr.pdf}. Accessed on: May 19, 2014.
 
-\bibitem{b13} Philip B. Kurland and Ralph Lerner, eds., \emph{The
-Founders' Constitution.} Chicago, IL, USA: Univ. of Chicago Press,
-1987, Accessed on: Feb. 28, 2010, [Online] Available:
-\underline{http://press-pubs.uchicago.edu/founders/}
+% \bibitem{b13} Philip B. Kurland and Ralph Lerner, eds., \emph{The
+% Founders' Constitution.} Chicago, IL, USA: Univ. of Chicago Press,
+% 1987, Accessed on: Feb. 28, 2010, [Online] Available:
+% \underline{http://press-pubs.uchicago.edu/founders/}
 
-\bibitem{b14} J. S. Turner, ``New directions in communications,'' \emph{IEEE J. Sel. Areas Commun}., vol. 13, no. 1, pp. 11-23, Jan. 1995.
+% \bibitem{b14} J. S. Turner, ``New directions in communications,'' \emph{IEEE J. Sel. Areas Commun}., vol. 13, no. 1, pp. 11-23, Jan. 1995.
 
-\bibitem{b15} W. P. Risk, G. S. Kino, and H. J. Shaw, ``Fiber-optic frequency shifter using a surface acoustic wave incident at an oblique angle,'' \emph{Opt. Lett.}, vol. 11, no. 2, pp. 115--117, Feb. 1986.
+% \bibitem{b15} W. P. Risk, G. S. Kino, and H. J. Shaw, ``Fiber-optic frequency shifter using a surface acoustic wave incident at an oblique angle,'' \emph{Opt. Lett.}, vol. 11, no. 2, pp. 115--117, Feb. 1986.
 
-\bibitem{b16} P. Kopyt \emph{et al., ``}Electric properties of graphene-based conductive layers from DC up to terahertz range,'' \emph{IEEE THz Sci. Technol.,} to be published. DOI: 10.1109/TTHZ.2016.2544142.
+% \bibitem{b16} P. Kopyt \emph{et al., ``}Electric properties of graphene-based conductive layers from DC up to terahertz range,'' \emph{IEEE THz Sci. Technol.,} to be published. DOI: 10.1109/TTHZ.2016.2544142.
 
-\bibitem{b17} PROCESS Corporation, Boston, MA, USA. Intranets:
-Internet technologies deployed behind the firewall for corporate
-productivity. Presented at INET96 Annual Meeting. [Online].
-Available: \underline{http://home.process.com/Intranets/wp2.htp}
+% \bibitem{b17} PROCESS Corporation, Boston, MA, USA. Intranets:
+% Internet technologies deployed behind the firewall for corporate
+% productivity. Presented at INET96 Annual Meeting. [Online].
+% Available: \underline{http://home.process.com/Intranets/wp2.htp}
 
-\bibitem{b18} R. J. Hijmans and J. van Etten, ``Raster: Geographic analysis and modeling with raster data,'' R Package Version 2.0-12, Jan. 12, 2012. [Online]. Available: \underline {http://CRAN.R-project.org/package=raster} 
+% \bibitem{b18} R. J. Hijmans and J. van Etten, ``Raster: Geographic analysis and modeling with raster data,'' R Package Version 2.0-12, Jan. 12, 2012. [Online]. Available: \underline {http://CRAN.R-project.org/package=raster} 
 
-\bibitem{b19} Teralyzer. Lytera UG, Kirchhain, Germany [Online].
-Available:
-\underline{http://www.lytera.de/Terahertz\_THz\_Spectroscopy.php?id=home}, Accessed on: Jun. 5, 2014
+% \bibitem{b19} Teralyzer. Lytera UG, Kirchhain, Germany [Online].
+% Available:
+% \underline{http://www.lytera.de/Terahertz\_THz\_Spectroscopy.php?id=home}, Accessed on: Jun. 5, 2014
 
-\bibitem{b20} U.S. House. 102\textsuperscript{nd} Congress, 1\textsuperscript{st} Session. (1991, Jan. 11). \emph{H. Con. Res. 1, Sense of the Congress on Approval of}  \emph{Military Action}. [Online]. Available: LEXIS Library: GENFED File: BILLS
+% \bibitem{b20} U.S. House. 102\textsuperscript{nd} Congress, 1\textsuperscript{st} Session. (1991, Jan. 11). \emph{H. Con. Res. 1, Sense of the Congress on Approval of}  \emph{Military Action}. [Online]. Available: LEXIS Library: GENFED File: BILLS
 
-\bibitem{b21} Musical toothbrush with mirror, by L.M.R. Brooks. (1992, May 19). Patent D 326 189 [Online]. Available: NEXIS Library: LEXPAT File: DES
+% \bibitem{b21} Musical toothbrush with mirror, by L.M.R. Brooks. (1992, May 19). Patent D 326 189 [Online]. Available: NEXIS Library: LEXPAT File: DES
 
-\bibitem{b22} D. B. Payne and J. R. Stern, ``Wavelength-switched pas- sively coupled single-mode optical network,'' in \emph{Proc. IOOC-ECOC,} Boston, MA, USA, 1985, pp. 585--590.
+% \bibitem{b22} D. B. Payne and J. R. Stern, ``Wavelength-switched pas- sively coupled single-mode optical network,'' in \emph{Proc. IOOC-ECOC,} Boston, MA, USA, 1985, pp. 585--590.
 
-\bibitem{b23} D. Ebehard and E. Voges, ``Digital single sideband detection for interferometric sensors,'' presented at the \emph{2\textsuperscript{nd} Int. Conf. Optical Fiber Sensors,} Stuttgart, Germany, Jan. 2-5, 1984.
+% \bibitem{b23} D. Ebehard and E. Voges, ``Digital single sideband detection for interferometric sensors,'' presented at the \emph{2\textsuperscript{nd} Int. Conf. Optical Fiber Sensors,} Stuttgart, Germany, Jan. 2-5, 1984.
 
-\bibitem{b24} G. Brandli and M. Dick, ``Alternating current fed power supply,'' U.S. Patent 4 084 217, Nov. 4, 1978.
+% \bibitem{b24} G. Brandli and M. Dick, ``Alternating current fed power supply,'' U.S. Patent 4 084 217, Nov. 4, 1978.
 
-\bibitem{b25} J. O. Williams, ``Narrow-band analyzer,'' Ph.D. dissertation, Dept. Elect. Eng., Harvard Univ., Cambridge, MA, USA, 1993.
+% \bibitem{b25} J. O. Williams, ``Narrow-band analyzer,'' Ph.D. dissertation, Dept. Elect. Eng., Harvard Univ., Cambridge, MA, USA, 1993.
 
-\bibitem{b26} N. Kawasaki, ``Parametric study of thermal and chemical nonequilibrium nozzle flow,'' M.S. thesis, Dept. Electron. Eng., Osaka Univ., Osaka, Japan, 1993.
+% \bibitem{b26} N. Kawasaki, ``Parametric study of thermal and chemical nonequilibrium nozzle flow,'' M.S. thesis, Dept. Electron. Eng., Osaka Univ., Osaka, Japan, 1993.
 
-\bibitem{b27} A. Harrison, private communication, May 1995.
+% \bibitem{b27} A. Harrison, private communication, May 1995.
 
-\bibitem{b28} B. Smith, ``An approach to graphs of linear forms,'' unpublished.
+% \bibitem{b28} B. Smith, ``An approach to graphs of linear forms,'' unpublished.
 
-\bibitem{b29} A. Brahms, ``Representation error for real numbers in binary computer arithmetic,'' IEEE Computer Group Repository, Paper R-67-85.
+% \bibitem{b29} A. Brahms, ``Representation error for real numbers in binary computer arithmetic,'' IEEE Computer Group Repository, Paper R-67-85.
 
-\bibitem{b30} IEEE Criteria for Class IE Electric Systems, IEEE Standard 308, 1969.
+% \bibitem{b30} IEEE Criteria for Class IE Electric Systems, IEEE Standard 308, 1969.
 
-\bibitem{b31} Letter Symbols for Quantities, ANSI Standard Y10.5-1968.
+% \bibitem{b31} Letter Symbols for Quantities, ANSI Standard Y10.5-1968.
 
-\bibitem{b32} R. Fardel, M. Nagel, F. Nuesch, T. Lippert, and A. Wokaun, ``Fabrication of organic light emitting diode pixels by laser-assisted forward transfer,'' \emph{Appl. Phys. Lett.}, vol. 91, no. 6, Aug. 2007, Art. no. 061103.~
+% \bibitem{b32} R. Fardel, M. Nagel, F. Nuesch, T. Lippert, and A. Wokaun, ``Fabrication of organic light emitting diode pixels by laser-assisted forward transfer,'' \emph{Appl. Phys. Lett.}, vol. 91, no. 6, Aug. 2007, Art. no. 061103.~
 
-\bibitem{b33} J. Zhang and N. Tansu, ``Optical gain and laser characteristics of InGaN quantum wells on ternary InGaN substrates,'' \emph{IEEE Photon. J.}, vol. 5, no. 2, Apr. 2013, Art. no. 2600111
+% \bibitem{b33} J. Zhang and N. Tansu, ``Optical gain and laser characteristics of InGaN quantum wells on ternary InGaN substrates,'' \emph{IEEE Photon. J.}, vol. 5, no. 2, Apr. 2013, Art. no. 2600111
 
-\bibitem{b34} S. Azodolmolky~\emph{et al.}, Experimental demonstration of an impairment aware network planning and operation tool for transparent/translucent optical networks,''~\emph{J. Lightw. Technol.}, vol. 29, no. 4, pp. 439--448, Sep. 2011.
+% \bibitem{b34} S. Azodolmolky~\emph{et al.}, Experimental demonstration of an impairment aware network planning and operation tool for transparent/translucent optical networks,''~\emph{J. Lightw. Technol.}, vol. 29, no. 4, pp. 439--448, Sep. 2011.
 
-\end{thebibliography}
+% \end{thebibliography}
 
-\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{a1.png}}]{First A. Author} (M'76--SM'81--F'87) and all authors may include 
-biographies. Biographies are often not included in conference-related
-papers. This author became a Member (M) of IEEE in 1976, a Senior
-Member (SM) in 1981, and a Fellow (F) in 1987. The first paragraph may
-contain a place and/or date of birth (list place, then date). Next,
-the author's educational background is listed. The degrees should be
-listed with type of degree in what field, which institution, city,
-state, and country, and year the degree was earned. The author's major
-field of study should be lower-cased. 
+% \begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{a1.png}}]{First A. Author} (M'76--SM'81--F'87) and all authors may include 
+% biographies. Biographies are often not included in conference-related
+% papers. This author became a Member (M) of IEEE in 1976, a Senior
+% Member (SM) in 1981, and a Fellow (F) in 1987. The first paragraph may
+% contain a place and/or date of birth (list place, then date). Next,
+% the author's educational background is listed. The degrees should be
+% listed with type of degree in what field, which institution, city,
+% state, and country, and year the degree was earned. The author's major
+% field of study should be lower-cased. 
 
-The second paragraph uses the pronoun of the person (he or she) and not the 
-author's last name. It lists military and work experience, including summer 
-and fellowship jobs. Job titles are capitalized. The current job must have a 
-location; previous positions may be listed 
-without one. Information concerning previous publications may be included. 
-Try not to list more than three books or published articles. The format for 
-listing publishers of a book within the biography is: title of book 
-(publisher name, year) similar to a reference. Current and previous research 
-interests end the paragraph. The third paragraph begins with the author's 
-title and last name (e.g., Dr.\ Smith, Prof.\ Jones, Mr.\ Kajor, Ms.\ Hunter). 
-List any memberships in professional societies other than the IEEE. Finally, 
-list any awards and work for IEEE committees and publications. If a 
-photograph is provided, it should be of good quality, and 
-professional-looking. Following are two examples of an author's biography.
-\end{IEEEbiography}
+% The second paragraph uses the pronoun of the person (he or she) and not the 
+% author's last name. It lists military and work experience, including summer 
+% and fellowship jobs. Job titles are capitalized. The current job must have a 
+% location; previous positions may be listed 
+% without one. Information concerning previous publications may be included. 
+% Try not to list more than three books or published articles. The format for 
+% listing publishers of a book within the biography is: title of book 
+% (publisher name, year) similar to a reference. Current and previous research 
+% interests end the paragraph. The third paragraph begins with the author's 
+% title and last name (e.g., Dr.\ Smith, Prof.\ Jones, Mr.\ Kajor, Ms.\ Hunter). 
+% List any memberships in professional societies other than the IEEE. Finally, 
+% list any awards and work for IEEE committees and publications. If a 
+% photograph is provided, it should be of good quality, and 
+% professional-looking. Following are two examples of an author's biography.
+% \end{IEEEbiography}
 
-\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{a2.png}}]{Second B. Author} was born in Greenwich Village, New York, NY, USA in 
-1977. He received the B.S. and M.S. degrees in aerospace engineering from 
-the University of Virginia, Charlottesville, in 2001 and the Ph.D. degree in 
-mechanical engineering from Drexel University, Philadelphia, PA, in 2008.
+% \begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{a2.png}}]{Second B. Author} was born in Greenwich Village, New York, NY, USA in 
+% 1977. He received the B.S. and M.S. degrees in aerospace engineering from 
+% the University of Virginia, Charlottesville, in 2001 and the Ph.D. degree in 
+% mechanical engineering from Drexel University, Philadelphia, PA, in 2008.
 
-From 2001 to 2004, he was a Research Assistant with the Princeton Plasma 
-Physics Laboratory. Since 2009, he has been an Assistant Professor with the 
-Mechanical Engineering Department, Texas A{\&}M University, College Station. 
-He is the author of three books, more than 150 articles, and more than 70 
-inventions. His research interests include high-pressure and high-density 
-nonthermal plasma discharge processes and applications, microscale plasma 
-discharges, discharges in liquids, spectroscopic diagnostics, plasma 
-propulsion, and innovation plasma applications. He is an Associate Editor of 
-the journal \emph{Earth, Moon, Planets}, and holds two patents. 
+% From 2001 to 2004, he was a Research Assistant with the Princeton Plasma 
+% Physics Laboratory. Since 2009, he has been an Assistant Professor with the 
+% Mechanical Engineering Department, Texas A{\&}M University, College Station. 
+% He is the author of three books, more than 150 articles, and more than 70 
+% inventions. His research interests include high-pressure and high-density 
+% nonthermal plasma discharge processes and applications, microscale plasma 
+% discharges, discharges in liquids, spectroscopic diagnostics, plasma 
+% propulsion, and innovation plasma applications. He is an Associate Editor of 
+% the journal \emph{Earth, Moon, Planets}, and holds two patents. 
 
-Dr. Author was a recipient of the International Association of Geomagnetism 
-and Aeronomy Young Scientist Award for Excellence in 2008, and the IEEE 
-Electromagnetic Compatibility Society Best Symposium Paper Award in 2011. 
-\end{IEEEbiography}
+% Dr. Author was a recipient of the International Association of Geomagnetism 
+% and Aeronomy Young Scientist Award for Excellence in 2008, and the IEEE 
+% Electromagnetic Compatibility Society Best Symposium Paper Award in 2011. 
+% \end{IEEEbiography}
 
-\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{a3.png}}]{Third C. Author, Jr.} (M'87) received the B.S. degree in mechanical 
-engineering from National Chung Cheng University, Chiayi, Taiwan, in 2004 
-and the M.S. degree in mechanical engineering from National Tsing Hua 
-University, Hsinchu, Taiwan, in 2006. He is currently pursuing the Ph.D. 
-degree in mechanical engineering at Texas A{\&}M University, College 
-Station, TX, USA.
+% \begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{a3.png}}]{Third C. Author, Jr.} (M'87) received the B.S. degree in mechanical 
+% engineering from National Chung Cheng University, Chiayi, Taiwan, in 2004 
+% and the M.S. degree in mechanical engineering from National Tsing Hua 
+% University, Hsinchu, Taiwan, in 2006. He is currently pursuing the Ph.D. 
+% degree in mechanical engineering at Texas A{\&}M University, College 
+% Station, TX, USA.
 
-From 2008 to 2009, he was a Research Assistant with the Institute of 
-Physics, Academia Sinica, Tapei, Taiwan. His research interest includes the 
-development of surface processing and biological/medical treatment 
-techniques using nonthermal atmospheric pressure plasmas, fundamental study 
-of plasma sources, and fabrication of micro- or nanostructured surfaces. 
+% From 2008 to 2009, he was a Research Assistant with the Institute of 
+% Physics, Academia Sinica, Tapei, Taiwan. His research interest includes the 
+% development of surface processing and biological/medical treatment 
+% techniques using nonthermal atmospheric pressure plasmas, fundamental study 
+% of plasma sources, and fabrication of micro- or nanostructured surfaces. 
 
-Mr. Author's awards and honors include the Frew Fellowship (Australian 
-Academy of Science), the I. I. Rabi Prize (APS), the European Frequency and 
-Time Forum Award, the Carl Zeiss Research Award, the William F. Meggers 
-Award and the Adolph Lomb Medal (OSA).
-\end{IEEEbiography}
+% Mr. Author's awards and honors include the Frew Fellowship (Australian 
+% Academy of Science), the I. I. Rabi Prize (APS), the European Frequency and 
+% Time Forum Award, the Carl Zeiss Research Award, the William F. Meggers 
+% Award and the Adolph Lomb Medal (OSA).
+% \end{IEEEbiography}
 
 \EOD
 
