@@ -16,128 +16,179 @@ from model import ServerModel
 
 from utils.args import parse_args
 from utils.model_utils import read_data
+from simpy.events import AnyOf, AllOf
+import simpy
+
+
 
 STAT_METRICS_PATH = 'metrics/stat_metrics.csv'
 SYS_METRICS_PATH = 'metrics/sys_metrics.csv'
 
-def main():
+class set_up():
+    def __init__(self, env):
+        self.args = parse_args()
+        self.env = env
 
-    args = parse_args()
+        # Set the random seed if provided (affects client sampling, and batching)
+        random.seed(1 + self.args.seed)
+        np.random.seed(12 + self.args.seed)
+        tf.set_random_seed(123 + self.args.seed)
 
-    # Set the random seed if provided (affects client sampling, and batching)
-    random.seed(1 + args.seed)
-    np.random.seed(12 + args.seed)
-    tf.set_random_seed(123 + args.seed)
+        self.model_path = '%s/%s.py' % (self.args.dataset, self.args.model)
+        if not os.path.exists(self.model_path):
+            print('Please specify a valid dataset and a valid model.')
+        self.model_path = '%s.%s' % (self.args.dataset, self.args.model)
 
-    model_path = '%s/%s.py' % (args.dataset, args.model)
-    if not os.path.exists(model_path):
-        print('Please specify a valid dataset and a valid model.')
-    model_path = '%s.%s' % (args.dataset, args.model)
-    
-    print('############################## %s ##############################' % model_path)
-    mod = importlib.import_module(model_path)
-    ClientModel = getattr(mod, 'ClientModel')
+        print('############################## %s ##############################' % self.model_path)
+        self.mod = importlib.import_module(self.model_path)
+        self.ClientModel = getattr(self.mod, 'ClientModel')
 
-    tup = MAIN_PARAMS[args.dataset][args.t]
-    num_rounds = args.num_rounds if args.num_rounds != -1 else tup[0]
-    eval_every = args.eval_every if args.eval_every != -1 else tup[1]
+        self.tup = MAIN_PARAMS[self.args.dataset][self.args.t]
+        self.num_rounds = self.args.num_rounds if self.args.num_rounds != -1 else self.tup[0]
+        self.eval_every = self.args.eval_every if self.args.eval_every != -1 else self.tup[1]
 
+        # Suppress tf warnings
+        tf.logging.set_verbosity(tf.logging.WARN)
 
-    # Suppress tf warnings
-    tf.logging.set_verbosity(tf.logging.WARN)
+        # Create 2 models
+        self.model_params = MODEL_PARAMS[self.model_path]
+        if self.args.lr != -1:
+            self.model_params_list = list(self.model_params)
+            self.model_params_list[0] = self.args.lr
+            self.model_params = tuple(self.model_params_list)
 
-    # Create 2 models
-    model_params = MODEL_PARAMS[model_path]
-    if args.lr != -1:
-        model_params_list = list(model_params)
-        model_params_list[0] = args.lr
-        model_params = tuple(model_params_list)
+        # Create client model, and share params with server model
+        tf.reset_default_graph()
+        self.client_model = self.ClientModel(self.args.seed, *self.model_params)
 
-    # Create client model, and share params with server model
-    tf.reset_default_graph()
-    client_model = ClientModel(args.seed, *model_params)
-
-
-    # Create clients
-    clients = setup_clients(args.dataset, client_model)
-    # Create server
-    server = Server(client_model, len(clients))
-    client_ids, client_groups, client_num_samples = server.get_clients_info(clients)
-    print('Clients in Total: %d' % len(clients))
-
-    if args.algorithm == 'fedavg':
-        clients_per_round = args.clients_per_round if args.clients_per_round != -1 else tup[2]
-        # Initial status
-        print('--- Random Initialization ---')
-        stat_writer_fn = get_stat_writer_function(client_ids, client_groups, client_num_samples, args)
-        sys_writer_fn = get_sys_writer_function(args)
-        print_stats(0, server, clients, client_num_samples, args, stat_writer_fn)
-    else:
-        clients_per_round = len(clients)
-
-
-
-
-
-    # Simulate training
-    for i in range(num_rounds):
-        print('--- Round %d of %d: Training %d Clients ---' % (i + 1, num_rounds, clients_per_round))
-
-        # Select clients to train this round
-        server.select_clients(i, online(clients), num_clients=clients_per_round)
-        c_ids, c_groups, c_num_samples = server.get_clients_info(server.selected_clients)
-        if args.algorithm == 'femnist':
-            # Simulate server model training on selected clients' data
-            sys_metrics = server.train_model(num_epochs=args.num_epochs, batch_size=args.batch_size, minibatch=args.minibatch)
-            sys_writer_fn(i + 1, c_ids, sys_metrics, c_groups, c_num_samples)
+        # Create clients
+        self.clients = setup_clients(self.env,self.args.dataset, self.client_model)
+        # Create server
+        self.server = Server(self.client_model, len(self.clients))
+        self.client_ids, self.client_groups, self.client_num_samples = self.server.get_clients_info(self.clients)
+        print('Clients in Total: %d' % len(self.clients))
         
-            # Update server model
-            server.update_model()
+        self.replica = self.args.replica
+        self.segment = self.args.segment
+        self.client_num = len(self.clients)
+        # self.server_num = 1
+        # self.server = Server(self.client_num)
+        # self.clients = clients
+        
+        self.main_proc = env.process(self.main_process())
+
+    # def main_proc(self,env):
+    #     for i in range(self.num_rounds):
+    #         yield env.process(self.round(env, self.client_num, self.clients, self.server.bandwidth, i))
+    #
+    # def round(self,env, client_num, clients, bandwidth, i):
+    #
+    #     events = [env.process(c.train_process(env, i, client_num, clients, bandwidth))for c in clients]
+    #     yield AnyOf(env,events)
+    #     # for c in clients:
+    #     #     c.seg_transfer_time = [0]*client_num
+
+    def round_proc(self, my_round):
+        for c in self.clients:
+            print('start straining client:',c.idx)
+            c.train(self.server, num_epochs=self.args.num_epochs, batch_size=self.args.batch_size,
+                    minibatch=self.args.minibatch)
+        if self.args.algorithm == 'gossip':
+            print(3333)
+            for c in self.clients:
+                c.update_model(self.args.replica, 1, self.server)
+        elif self.args.algorithm == 'combo':
+            for c in self.clients:
+                c.update_model(self.args.replica, self.args.segment, self.server)
+        elif self.args.algorithm == 'BACombo':
+            for c in self.clients:
+                c.update_model(self.args.replica, self.args.segment, self.server)
+            for c in self.clients:
+                c.update_bandwidth(self.args.segment)
+        self.server.updates = []
+        self.server.model = self.clients[0].model
+        print(4444)
+        events = [self.env.process(c.train_time_simulate(self.env,  my_round, self.clients, self.server.bandwidth,
+                                                         self.replica,self.args.segment)) for c in self.clients]
+        print(555)
+        yield AnyOf(self.env,events)
+
+
+    def main_process(self):
+        if self.args.algorithm == 'fedavg':
+            clients_per_round = self.args.clients_per_round if self.args.clients_per_round != -1 else  self.tup[2]
+            # Initial status
+            print('--- Random Initialization ---')
+            stat_writer_fn = get_stat_writer_function( self.client_ids,  self.client_groups,  self.client_num_samples,  self.args)
+            sys_writer_fn = get_sys_writer_function( self.args)
+            print_stats(0, self.server,  self.clients,  self.client_num_samples,  self.args,  stat_writer_fn)
         else:
-            for c in clients:
-                c.train(server, num_epochs=args.num_epochs, batch_size=args.batch_size, minibatch=args.minibatch)
-            if args.algorithm == 'gossip':
-                for c in clients:
-                    c.update_model(args.replica, 1, server)
-            elif args.algorithm == 'combo':
-                for c in clients:
-                    c.update_model(args.replica, args.segment, server)
-            elif args.algorithm == 'BACombo':
-                for c in clients:
-                    c.update_model(args.replica, args.segment, server)
-                for c in clients:
-                    c.update_bandwidth()
-            server.updates = []
-            server.model = clients[0].model
+            clients_per_round = len(self.clients)
 
-        # Test model
-        if (i + 1) % eval_every == 0 or (i + 1) == num_rounds:
-            print_stats(i + 1, server, clients, client_num_samples, args, stat_writer_fn)
+            # Simulate training
+
+        for i in range( self.num_rounds):
+            print('--- Round %d of %d: Training %d Clients ---' % (i + 1,  self.num_rounds, clients_per_round))
+            # Select clients to train this round
+            self.server.select_clients(i, online(self.clients), num_clients=clients_per_round)
+            c_ids, c_groups, c_num_samples = self.server.get_clients_info(self.server.selected_clients)
+            print(111)
+            if self.args.algorithm == 'fedavg':
+                # Simulate server model training on selected clients' data
+                sys_metrics = self.server.train_model(num_epochs=self.args.num_epochs, batch_size=self.args.batch_size, minibatch=self.args.minibatch)
+                sys_writer_fn(i + 1, c_ids, sys_metrics, c_groups, c_num_samples)
+                # Update server model
+                self.server.update_model()
+            else:
+                print(2222)
+                yield self.env.process(self.round_proc(i))
+                print(10000000)
+                # for c in self.clients:
+                #     c.train(self.server, num_epochs=self.args.num_epochs, batch_size=self.args.batch_size, minibatch=self.args.minibatch)
+                # if self.args.algorithm == 'gossip':
+                #     for c in self.clients:
+                #         c.update_model(self.args.replica, 1, self.server)
+                # elif self.args.algorithm == 'combo':
+                #     for c in self.clients:
+                #         c.update_model(self.args.replica, self.args.segment, self.server)
+                # elif self.args.algorithm == 'BACombo':
+                #     for c in self.clients:
+                #         c.update_model(self.args.replica, self.args.segment, self.server)
+                #     for c in self.clients:
+                #         c.update_bandwidth()
+                # self.server.updates = []
+                # self.server.model = self.clients[0].model
     
-    # Save server model
-    ckpt_path = os.path.join('checkpoints', args.dataset)
-    if not os.path.exists(ckpt_path):
-        os.makedirs(ckpt_path)
-    save_path = server.save_model(os.path.join(ckpt_path, '{}.ckpt'.format(args.model)))
-    print('Model saved in path: %s' % save_path)
-
-    # Close models
-    server.close_model()
+            # Test model
+            if (i + 1) % self.eval_every == 0 or (i + 1) == self.num_rounds:
+                stat_writer_fn = get_stat_writer_function(self.client_ids, self.client_groups, self.client_num_samples,
+                                                          self.args)
+                print_stats(i + 1, self.server, self.clients, self.client_num_samples, self.args, stat_writer_fn)
+        
+        # Save server model
+        ckpt_path = os.path.join('checkpoints', self.args.dataset)
+        if not os.path.exists(ckpt_path):
+            os.makedirs(ckpt_path)
+        save_path = self.server.save_model(os.path.join(ckpt_path, '{}.ckpt'.format(self.args.model)))
+        print('Model saved in path: %s' % save_path)
+    
+        # Close models
+        self.server.close_model()
 
 def online(clients):
     """We assume all users are always online."""
     return clients
 
 
-def create_clients(users, groups, train_data, test_data, model):
+def create_clients(env,users, groups, train_data, test_data, model):
     if len(groups) == 0:
         groups = [[] for _ in users]
     a = [i for i in range(len(users))]
-    clients = [Client(j, len(users), u, g, train_data[u], test_data[u], model) for j, u, g in zip(a, users, groups)]
+    clients = [Client(env,j, len(users), u, g, train_data[u], test_data[u], model) for j, u, g in zip(a, users, groups)]
     return clients
 
 
-def setup_clients(dataset, model=None):
+def setup_clients(env,dataset, model=None):
     """Instantiates clients based on given train and test data directories.
 
     Return:
@@ -148,7 +199,7 @@ def setup_clients(dataset, model=None):
 
     users, groups, train_data, test_data = read_data(train_data_dir, test_data_dir)
 
-    clients = create_clients(users, groups, train_data, test_data, model)
+    clients = create_clients(env,users, groups, train_data, test_data, model)
 
     return clients
 
@@ -188,7 +239,7 @@ def print_metrics(metrics, weights, prefix=''):
 
     Args:
         metrics: dict with client ids as keys. Each entry is a dict
-            with the metrics of that client.
+            with the metrics of that cient.
         weights: dict with client ids as keys. Each entry is the weight
             for that client.
     """
@@ -206,4 +257,7 @@ def print_metrics(metrics, weights, prefix=''):
 
 
 if __name__ == '__main__':
-    main()
+    env = simpy.Environment()
+    set_up(env)
+    env.run()
+    # main()

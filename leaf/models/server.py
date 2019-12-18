@@ -14,7 +14,7 @@ class Server:
         self.clients_num = clients_num
         self.bandwidth = []
         self.transfer_time = []
-        self.s
+        # self.s
         self.init_bandwidth()
 
     def init_bandwidth(self):
@@ -85,6 +85,27 @@ class Server:
 
         return sys_metrics
 
+    # def fadavg_train_time_simulate(self,my_round,env):
+    #     if my_round != 0:
+    #         while not self.round_signal:
+    #             yield env.timeout(0.01)
+    #     self.round_signal = False
+    #     print('-------------client [%d] round [%s] begin at %f:------------' % (self.idx, my_round, env.now))
+    #     yield env.timeout(TRAINING_TIME)
+    #     self.sigal = True
+    #     self.training_time.append(env.now)
+    #     idx_list = self.get_idx_list(e, replica, seg)
+    #     print('【Time:', env.now, '】', self.idx, 'pull from', idx_list)
+    #     events = [env.process(self.get_transfer_time(env, client_simulate_list, bandwidth, my_round, i, seg)) for i in
+    #               idx_list]
+    #     yield AllOf(env, events)
+    #     print('【Time:', env.now, '】【Round: %s】【Id: %d】' % (my_round, self.idx), 'transfer')
+    #     self.transfer_time.append(env.now)
+    #     self.round_signal = True
+
+
+
+
     def update_model(self):
         total_weight = 0.
         base = [0] * len(self.updates[0][1])
@@ -145,6 +166,3 @@ class Server:
     def close_model(self):
         self.client_model.close()
 
-    def env(self, my_round):
-
-        return self.transfer_time
