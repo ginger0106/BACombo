@@ -4,7 +4,7 @@ output_dir="${1:-./baseline}"
 
 split_seed="1549786796"
 sampling_seed="1549786595"
-num_rounds="2"
+num_rounds="1"
 
 fedavg_lr="0.004"
 declare -a fedavg_vals=( "3 1"
@@ -52,10 +52,10 @@ declare -a minibatch_vals=( "3 1"
 function move_data() {
 	path="$1"
 	suffix="$2"
-	
+
 	pushd models/metrics
-		mv sys_metrics.csv "${path}/sys_metrics_${suffix}.csv"
-		mv stat_metrics.csv "${path}/stat_metrics_${suffix}.csv"
+		mv metrics_sys.csv "${path}/sys_metrics_${suffix}.csv"
+		mv metrics_stat.csv "${path}/stat_metrics_${suffix}.csv"
 	popd
 
 	cp -r data/femnist/meta "${path}"
@@ -64,13 +64,13 @@ function move_data() {
 
 function run_gossip() {
 	num_epochs="$1"
-	segment = "$2"
-	replica = "$3"
-	e = "$4"
+	segment="$2"
+	replica="$3"
+	e="$4"
 
 	pushd models/
 #		python main.py -dataset 'femnist' -model 'cnn' --num-rounds ${num_rounds} --clients-per-round ${clients_per_round} --num-epochs ${num_epochs} -lr ${fedavg_lr}
-		python main.py -dataset 'femnist' -model 'cnn' --num-rounds ${num_rounds} --num-epochs ${num_epochs} -lr ${fedavg_lr} --segment ${segmnet} --replica ${replica} --eval-every 1 -e ${e}
+		python main.py -dataset 'femnist' -model 'cnn' -algorithm gossip --num-rounds ${num_rounds} --num-epochs ${num_epochs} -lr ${fedavg_lr} --segment ${segment} --replica ${replica} --eval-every 1 -e ${e}
 
 	popd
 	move_data ${output_dir} "gossip_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}"
@@ -78,13 +78,13 @@ function run_gossip() {
 
 function run_combo() {
 	num_epochs="$1"
-	segment = "$2"
-	replica = "$3"
-	e = "$4"
+	segment="$2"
+	replica="$3"
+	e="$4"
 
 	pushd models/
 #		python main.py -dataset 'femnist' -model 'cnn' --num-rounds ${num_rounds} --clients-per-round ${clients_per_round} --num-epochs ${num_epochs} -lr ${fedavg_lr}
-		python main.py -dataset 'femnist' -model 'cnn' --num-rounds ${num_rounds} --num-epochs ${num_epochs} -lr ${fedavg_lr} --segment ${segmnet} --replica ${replica} --eval-every 1 -e ${e}
+		python main.py -dataset 'femnist' -model 'cnn' -algorithm combo --num-rounds ${num_rounds} --num-epochs ${num_epochs} -lr ${fedavg_lr} --segment ${segment} --replica ${replica} --eval-every 1 -e ${e}
 
 	popd
 	move_data ${output_dir} "run_combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}"
@@ -92,13 +92,13 @@ function run_combo() {
 
 function run_bacombo() {
 	num_epochs="$1"
-	segment = "$2"
-	replica = "$3"
-	e = "$4"
+	segment="$2"
+	replica="$3"
+	e="$4"
 
 	pushd models/
 #		python main.py -dataset 'femnist' -model 'cnn' --num-rounds ${num_rounds} --clients-per-round ${clients_per_round} --num-epochs ${num_epochs} -lr ${fedavg_lr}
-		python main.py -dataset 'femnist' -model 'cnn' --num-rounds ${num_rounds} --num-epochs ${num_epochs} -lr ${fedavg_lr} --segment ${segmnet} --replica ${replica} --eval-every 1 -e ${e}
+		python main.py -dataset 'femnist' -model 'cnn' -algorithm BAcombo --num-rounds ${num_rounds} --num-epochs ${num_epochs} -lr ${fedavg_lr} --segment ${segment} --replica ${replica} --eval-every 1 -e ${e}
 
 	popd
 	move_data ${output_dir} "run_combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}"
@@ -156,10 +156,10 @@ echo "Storing results in directory ${output_dir} (please invoke this script as: 
 for val_pair in "${gossip_vals[@]}"; do
 #	clients_per_round=`echo ${val_pair} | cut -d' ' -f1`$
   echo ${val_pair}
-	num_epochs = `echo ${val_pair} | cut -d' ' -f1`
-  segment = `echo ${val_pair} | cut -d' ' -f2`
-	replica =`echo ${val_pair} | cut -d' ' -f3`
-	e = `echo ${val_pair} | cut -d' ' -f4`
+	num_epochs=`echo ${val_pair} | cut -d' ' -f1`
+  segment=`echo ${val_pair} | cut -d' ' -f2`
+	replica=`echo ${val_pair} | cut -d' ' -f3`
+	e=`echo ${val_pair} | cut -d' ' -f4`
 	echo "Running gossip experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
 	run_gossip  "${num_epochs}" "${segment}" "${replica}" "${e}"
 done
@@ -167,10 +167,10 @@ done
 # Run combo experiments
 for val_pair in "${combo_vals[@]}"; do
 #	clients_per_round=`echo ${val_pair} | cut -d' ' -f1`
-	num_epochs = `echo ${val_pair} | cut -d' ' -f1`
-  segment = `echo ${val_pair} | cut -d' ' -f2`
-	replica =`echo ${val_pair} | cut -d' ' -f3`
-	e = `echo ${val_pair} | cut -d' ' -f4`
+	num_epochs=`echo ${val_pair} | cut -d' ' -f1`
+  segment=`echo ${val_pair} | cut -d' ' -f2`
+	replica=`echo ${val_pair} | cut -d' ' -f3`
+	e=`echo ${val_pair} | cut -d' ' -f4`
 	echo "Running combo experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
 	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}"
 done
@@ -178,10 +178,10 @@ done
 # Run BAcombo experiments
 for val_pair in "${BAcombo_vals[@]}"; do
 #	clients_per_round=`echo ${val_pair} | cut -d' ' -f1`
-	num_epochs = `echo ${val_pair} | cut -d' ' -f1`
-  segment = `echo ${val_pair} | cut -d' ' -f2`
-	replica =`echo ${val_pair} | cut -d' ' -f3`
-	e = `echo ${val_pair} | cut -d' ' -f4`
+	num_epochs=`echo ${val_pair} | cut -d' ' -f1`
+  segment=`echo ${val_pair} | cut -d' ' -f2`
+	replica=`echo ${val_pair} | cut -d' ' -f3`
+	e=`echo ${val_pair} | cut -d' ' -f4`
 	echo "Running BAcombo experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
 	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}"
 done
