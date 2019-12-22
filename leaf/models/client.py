@@ -82,20 +82,22 @@ class Client:
         return comp, num_train_samples, update
 
     def update_model(self, replica, segment, server):
-        trive_model = []
+        print('-----update[%s]------'%self.idx)
         weight_list = []
         for p in range(segment):
             target = self.choose_best_segment(e, replica)
-            segment_weight = self.get_segments(server.updates[self.idx][1], p,segment)
+            segment_weight = self.get_segments(server.updates[self.idx][1], p, segment)
+            print('segment:',p)
             for k in range(replica):
-                segment_weight += self.get_segments(server.updates[target[k]][1], p,segment)
+                segment_weight += self.get_segments(server.updates[target[k]][1], p, segment)
+            print('replica done')
             segment_weight = np.array(segment_weight)
             segment_weight = segment_weight/(replica + 1)
             weight_list.extend(segment_weight)
+        print('segment done')
         weight_list = np.array(weight_list)
-        trive_model.append(self.reconstruct(weight_list))
-
-        self.model1 = np.array(trive_model)
+        weight_list = self.reconstruct(weight_list)
+        self.model1 = weight_list
 
         self.updates = []
 
@@ -122,12 +124,19 @@ class Client:
         target = []
         if self.args.algorithm == 'BACombo':
             if num < e:
+                print('random select')
+                # # client_num_list = list(range(client_num))
+                # # client_num_list.remove(self.idx)
+                # # return np.random.choice(client_num_list, size=k, replace=False, p=None)
+                # client_candidate = self.clients_num.
                 for i in range(replica):
                     a = np.random.randint(0, self.clients_num)
                     while a == self.idx or a in target:
                         a = np.random.randint(0, self.clients_num)
+                    print('find one for ', i)
                     target.append(a)
             else:
+                print('find max bandwidth')
                 pridict = []
                 for bandwidth in self.pridict_bandwidth:
                     if len(bandwidth) < latest_n:
@@ -146,6 +155,7 @@ class Client:
     def get_segments(self, model_weights, seg, segment):
         flat_m = []
         self.shape_list = []
+        print('the len of weights', len(model_weights))
         for x in model_weights:
             self.shape_list.append(x.shape)
             flat_m.extend(list(x.flatten()))
@@ -229,7 +239,9 @@ class Client:
             data = self.train_data
         elif set_to_use == 'test':
             data = self.eval_data
-        return self.model.test(data)
+        metrics = self.model.test(data)
+        metrics['time'] = self.record_time[-1]
+        return metrics
 
     @property
     def num_test_samples(self):

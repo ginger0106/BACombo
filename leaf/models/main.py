@@ -13,6 +13,8 @@ from baseline_constants import MAIN_PARAMS, MODEL_PARAMS
 from client import Client
 from server import Server
 from model import ServerModel
+from baseline_constants import BYTES_WRITTEN_KEY, BYTES_READ_KEY, LOCAL_COMPUTATIONS_KEY
+
 
 from utils.args import parse_args
 from utils.model_utils import read_data
@@ -71,6 +73,14 @@ class set_up():
         self.replica = self.args.replica
         self.segment = self.args.segment
         self.client_num = len(self.clients)
+
+        # Initial status
+        # print('--- Random Initialization ---')
+        # self.stat_writer_fn = get_stat_writer_function(self.client_ids, self.client_groups, self.client_num_samples,
+        #                                           self.args)
+        # self.sys_writer_fn = get_sys_writer_function(self.args)
+        # print_stats(0, self.server, self.clients, self.client_num_samples, self.args, self.stat_writer_fn)
+
         # self.server_num = 1
         # self.server = Server(self.client_num)
         # self.clients = clients
@@ -89,10 +99,22 @@ class set_up():
     #     #     c.seg_transfer_time = [0]*client_num
 
     def round_proc(self, my_round):
+        sys_metrics = {
+            c.id: {BYTES_WRITTEN_KEY: 0,
+                   BYTES_READ_KEY: 0,
+                   LOCAL_COMPUTATIONS_KEY: 0} for c in self.clients}
         for c in self.clients:
-            print('start straining client:',c.idx)
-            c.train(self.server, num_epochs=self.args.num_epochs, batch_size=self.args.batch_size,
-                    minibatch=self.args.minibatch)
+            print('-----training-[%s]-------'%c.idx)
+            comp, num_samples, update = c.train(self.server, num_epochs=self.args.num_epochs, batch_size=self.args.batch_size,
+                                                minibatch=self.args.minibatch)
+            sys_metrics[c.id][BYTES_READ_KEY] += c.model.size
+            sys_metrics[c.id][BYTES_WRITTEN_KEY] += c.model.size
+            sys_metrics[c.id][LOCAL_COMPUTATIONS_KEY] = comp
+        self.sys_writer_fn(my_round + 1,self.c_ids, sys_metrics, self.c_groups, self.c_num_samples)
+        # for c in self.clients:
+        #     print('start straining client:',c.idx)
+        #     c.train(self.server, num_epochs=self.args.num_epochs, batch_size=self.args.batch_size,
+        #             minibatch=self.args.minibatch)
         if self.args.algorithm == 'gossip':
             print(3333)
             for c in self.clients:
@@ -106,7 +128,7 @@ class set_up():
             for c in self.clients:
                 c.update_bandwidth(self.args.segment)
         self.server.updates = []
-        self.server.model = self.clients[0].model
+        self.server.model = self.clients[0].model1
         print(4444)
         events = [self.env.process(c.train_time_simulate(self.env,  my_round, self.clients, self.server.bandwidth,
                                                          self.replica,self.args.segment)) for c in self.clients]
@@ -116,27 +138,29 @@ class set_up():
 
     def main_process(self):
         if self.args.algorithm == 'fedavg':
-            clients_per_round = self.args.clients_per_round if self.args.clients_per_round != -1 else  self.tup[2]
+            clients_per_round = self.args.clients_per_round if self.args.clients_per_round != -1 else self.tup[2]
             # Initial status
-            print('--- Random Initialization ---')
-            stat_writer_fn = get_stat_writer_function( self.client_ids,  self.client_groups,  self.client_num_samples,  self.args)
-            sys_writer_fn = get_sys_writer_function( self.args)
-            print_stats(0, self.server,  self.clients,  self.client_num_samples,  self.args,  stat_writer_fn)
+            print('--- Random Initialization ---1111')
+            self.stat_writer_fn = get_stat_writer_function(self.client_ids, self.client_groups, self.client_num_samples, self.args)
+            self.sys_writer_fn = get_sys_writer_function(self.args)
+            print_stats(0, self.server, self.clients, self.client_num_samples, self.args, self.stat_writer_fn)
         else:
+            print('--- Random Initialization ---2222')
+            self.stat_writer_fn = get_stat_writer_function(self.client_ids, self.client_groups, self.client_num_samples, self.args)
+            self.sys_writer_fn = get_sys_writer_function(self.args)
+            print_stats(0, self.server, self.clients, self.client_num_samples, self.args, self.stat_writer_fn)
             clients_per_round = len(self.clients)
-
-            # Simulate training
 
         for i in range( self.num_rounds):
             print('--- Round %d of %d: Training %d Clients ---' % (i + 1,  self.num_rounds, clients_per_round))
             # Select clients to train this round
             self.server.select_clients(i, online(self.clients), num_clients=clients_per_round)
-            c_ids, c_groups, c_num_samples = self.server.get_clients_info(self.server.selected_clients)
+            self.c_ids, self.c_groups, self.c_num_samples = self.server.get_clients_info(self.server.selected_clients)
             print(111)
             if self.args.algorithm == 'fedavg':
                 # Simulate server model training on selected clients' data
-                sys_metrics = self.server.train_model(num_epochs=self.args.num_epochs, batch_size=self.args.batch_size, minibatch=self.args.minibatch)
-                sys_writer_fn(i + 1, c_ids, sys_metrics, c_groups, c_num_samples)
+                self.sys_metrics = self.server.train_model(num_epochs=self.args.num_epochs, batch_size=self.args.batch_size, minibatch=self.args.minibatch)
+                self.sys_writer_fn(i + 1, self.c_ids, self.sys_metrics, self.c_groups, self.c_num_samples)
                 # Update server model
                 self.server.update_model()
             else:
@@ -161,10 +185,10 @@ class set_up():
     
             # Test model
             if (i + 1) % self.eval_every == 0 or (i + 1) == self.num_rounds:
-                stat_writer_fn = get_stat_writer_function(self.client_ids, self.client_groups, self.client_num_samples,
-                                                          self.args)
-                print_stats(i + 1, self.server, self.clients, self.client_num_samples, self.args, stat_writer_fn)
-        
+                # stat_writer_fn = get_stat_writer_function(self.client_ids, self.client_groups, self.client_num_samples,
+                #                                           self.args)
+                print_stats(i + 1, self.server, self.clients, self.client_num_samples, self.args, self.stat_writer_fn)
+
         # Save server model
         ckpt_path = os.path.join('checkpoints', self.args.dataset)
         if not os.path.exists(ckpt_path):
@@ -181,10 +205,17 @@ def online(clients):
 
 
 def create_clients(env,users, groups, train_data, test_data, model):
+    args = parse_args()
     if len(groups) == 0:
         groups = [[] for _ in users]
     a = [i for i in range(len(users))]
-    clients = [Client(env,j, len(users), u, g, train_data[u], test_data[u], model) for j, u, g in zip(a, users, groups)]
+    if args.algorithm == 'fedavg':
+        clients = [Client(env,j, len(users), u, g, train_data[u], test_data[u], model) for j, u, g in zip(a, users, groups)]
+    else:
+        clients = [Client(env, j, len(users), u, g, train_data[u], test_data[u], model) for j, u, g in
+                   zip(a, users, groups)]
+        # clients = [Client(env,j, args.clients_per_round, u, g, train_data[u], test_data[u], model) for j, u, g in zip(a, users, groups)]
+        # clients = clients[:args.clients_per_round]
     return clients
 
 
@@ -222,16 +253,32 @@ def get_sys_writer_function(args):
     return writer_fn
 
 
-def print_stats(
-    num_round, server, clients, num_samples, args, writer):
-    
-    train_stat_metrics = server.test_model(clients, set_to_use='train')
-    print_metrics(train_stat_metrics, num_samples, prefix='train_')
-    writer(num_round, train_stat_metrics, 'train')
+def print_stats(num_round, server, clients, num_samples, args, writer):
+    args = parse_args()
+    if args.algorithm == 'fedavg':
+        train_stat_metrics = server.test_model(clients, set_to_use='train')
+        print_metrics(train_stat_metrics, num_samples, prefix='train_')
+        writer(num_round, train_stat_metrics, 'train')
+        test_stat_metrics = server.test_model(clients, set_to_use='test')
+        print_metrics(test_stat_metrics, num_samples, prefix='test_')
+        writer(num_round, test_stat_metrics, 'test')
+    else:
+        train_stat_metrics = {}
+        for client in clients:
+            client.model1 = server.model
+            c_metrics = client.test('train')
+            train_stat_metrics[client.id] = c_metrics
+        print_metrics(train_stat_metrics, num_samples, prefix='train_')
+        writer(num_round, train_stat_metrics, 'train')
+        test_stat_metrics = {}
+        for client in clients:
+            client.model1 = server.model
+            c_metrics = client.test('test')
+            test_stat_metrics[client.id] = c_metrics
+        print_metrics(test_stat_metrics, num_samples, prefix='test_')
+        writer(num_round, test_stat_metrics, 'test')
 
-    test_stat_metrics = server.test_model(clients, set_to_use='test')
-    print_metrics(test_stat_metrics, num_samples, prefix='test_')
-    writer(num_round, test_stat_metrics, 'test')
+# def save_stats():
 
 
 def print_metrics(metrics, weights, prefix=''):
