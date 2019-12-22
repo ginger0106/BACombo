@@ -24,7 +24,7 @@ class Server:
                 if i == j:
                     a.append(0)
                 else:
-                    a.append(np.random.randint(1, 100))
+                    a.append(np.random.randint(1, 10))
             self.bandwidth.append(a)
 
     def select_clients(self, my_round, possible_clients, num_clients=20):

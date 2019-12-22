@@ -64,7 +64,7 @@ class set_up():
         self.client_model = self.ClientModel(self.args.seed, *self.model_params)
 
         # Create clients
-        self.clients = setup_clients(self.env,self.args.dataset, self.client_model)
+        self.clients = setup_clients(self.args.e,self.env,self.args.dataset, self.client_model)
         # Create server
         self.server = Server(self.client_model, len(self.clients))
         self.client_ids, self.client_groups, self.client_num_samples = self.server.get_clients_info(self.clients)
@@ -73,6 +73,7 @@ class set_up():
         self.replica = self.args.replica
         self.segment = self.args.segment
         self.client_num = len(self.clients)
+        # self.seg_size = sys.getsizeof(self.server.updates)
 
         # Initial status
         # print('--- Random Initialization ---')
@@ -204,22 +205,22 @@ def online(clients):
     return clients
 
 
-def create_clients(env,users, groups, train_data, test_data, model):
+def create_clients(e,env,users, groups, train_data, test_data, model):
     args = parse_args()
     if len(groups) == 0:
         groups = [[] for _ in users]
     a = [i for i in range(len(users))]
     if args.algorithm == 'fedavg':
-        clients = [Client(env,j, len(users), u, g, train_data[u], test_data[u], model) for j, u, g in zip(a, users, groups)]
+        clients = [Client(e,env,j, len(users), u, g, train_data[u], test_data[u], model) for j, u, g in zip(a, users, groups)]
     else:
-        clients = [Client(env, j, len(users), u, g, train_data[u], test_data[u], model) for j, u, g in
+        clients = [Client(e,env, j, len(users), u, g, train_data[u], test_data[u], model) for j, u, g in
                    zip(a, users, groups)]
         # clients = [Client(env,j, args.clients_per_round, u, g, train_data[u], test_data[u], model) for j, u, g in zip(a, users, groups)]
         # clients = clients[:args.clients_per_round]
     return clients
 
 
-def setup_clients(env,dataset, model=None):
+def setup_clients(e,env,dataset, model=None):
     """Instantiates clients based on given train and test data directories.
 
     Return:
@@ -230,7 +231,7 @@ def setup_clients(env,dataset, model=None):
 
     users, groups, train_data, test_data = read_data(train_data_dir, test_data_dir)
 
-    clients = create_clients(env,users, groups, train_data, test_data, model)
+    clients = create_clients(e,env,users, groups, train_data, test_data, model)
 
     return clients
 

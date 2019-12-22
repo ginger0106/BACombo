@@ -7,6 +7,8 @@ import simpy
 import numpy as np
 import random
 from simpy.events import AnyOf, AllOf
+import sys
+from datetime import  datetime
 
 latest_n = 5 #取最近五个预测带宽取平均
 init_pridict_bandwidth = 50 #初始化预测带宽的大小
@@ -16,10 +18,12 @@ SEG_SIZE = 30
 TRAINING_TIME = 30
 g = 0.01
 
+
 class Client:
     
-    def __init__(self, env,idx, clients_num, client_id, group=None, train_data={'x': [], 'y': []}, eval_data={'x': [], 'y': []}, model=None):
+    def __init__(self, e, env,idx, clients_num, client_id, group=None, train_data={'x': [], 'y': []}, eval_data={'x': [], 'y': []}, model=None):
         self._model = model
+        self.e = e
         self.id = client_id # integer
         self.idx = idx
         self.clients_num = clients_num
@@ -36,12 +40,13 @@ class Client:
 
         self.exit_bw = simpy.Container(env, init=CAPACITY, capacity=CAPACITY)
         self.record_time = [env.now]
-        self.training_time = [env.now]
+        # self.training_time = [env.now]
         # self.seg_transfer_time = [0] * clients_num
         self.send_que = simpy.Container(env, init=0, capacity=1000)
         self.sigal = False
         # self.max_seg_transfer_time = 0
         self.round_signal = False
+        self.training_time = 0
 
         for i in range(clients_num):
             a = []
@@ -64,6 +69,7 @@ class Client:
             update: set of weights
             update_size: number of bytes in update
         """
+        start_time = datetime.now()
         if minibatch is None:
             data = self.train_data
             comp, update = self.model.train(data, num_epochs, batch_size)
@@ -79,6 +85,8 @@ class Client:
         num_train_samples = len(data['y'])
         self.updates.append((num_train_samples, update))
         server.updates.append((num_train_samples, update))
+        end_time = datetime.now()
+        self.training_time = (end_time-start_time).seconds
         return comp, num_train_samples, update
 
     def update_model(self, replica, segment, server):
@@ -98,7 +106,7 @@ class Client:
         weight_list = np.array(weight_list)
         weight_list = self.reconstruct(weight_list)
         self.model1 = weight_list
-
+        self.current_updates = self.updates
         self.updates = []
 
     def train_time_simulate(self,env, my_round, client_simulate_list, bandwidth,replica,seg):
@@ -107,9 +115,9 @@ class Client:
                 yield env.timeout(0.01)
         self.round_signal = False
         print('-------------client [%d] round [%s] begin at %f:------------' % (self.idx, my_round, env.now))
-        yield env.timeout(TRAINING_TIME)
+        yield env.timeout(self.training_time)
         self.sigal = True
-        self.training_time.append(env.now)
+        # self.training_time.append(env.now)
         idx_list = self.get_idx_list(e, replica, seg)
         print('【Time:', env.now, '】', self.idx, 'pull from', idx_list)
         events = [env.process(self.get_transfer_time(env, client_simulate_list, bandwidth, my_round, i, seg)) for i in
@@ -123,18 +131,20 @@ class Client:
         num = np.random.rand()
         target = []
         if self.args.algorithm == 'BACombo':
-            if num < e:
+            if num < self.e:
                 print('random select')
                 # # client_num_list = list(range(client_num))
                 # # client_num_list.remove(self.idx)
                 # # return np.random.choice(client_num_list, size=k, replace=False, p=None)
-                # client_candidate = self.clients_num.
-                for i in range(replica):
-                    a = np.random.randint(0, self.clients_num)
-                    while a == self.idx or a in target:
-                        a = np.random.randint(0, self.clients_num)
-                    print('find one for ', i)
-                    target.append(a)
+                client_candidate = list(range(self.clients_num))#.remove(self.idx)
+                client_candidate.remove(self.idx)
+                # for i in range(replica):
+                target = np.random.choice(client_candidate,size = replica,replace=False )
+                    # a = np.random.randint(0, self.clients_num)
+                    # while a == self.idx or a in target:
+                    #     a = np.random.randint(0, self.clients_num)
+                    # print('find one for ', i)
+                # target.append(a)
             else:
                 print('find max bandwidth')
                 pridict = []
@@ -145,11 +155,16 @@ class Client:
                         pridict.append(np.mean(bandwidth[-latest_n:]))
                 target = list(map(pridict.index, heapq.nlargest(latest_n, pridict)))
         else:
-            for i in range(replica):
-                a = np.random.randint(0, self.clients_num)
-                while a == self.idx or a in target:
-                    a = np.random.randint(0, self.clients_num)
-                target.append(a)
+            print('select target')
+            client_candidate = list(range(self.clients_num))
+            client_candidate.remove(self.idx)
+            target = np.random.choice(client_candidate, size=replica, replace=False)
+
+            # for i in range(replica):
+            #     a = np.random.randint(0, self.clients_num)
+            #     while a == self.idx or a in target:
+            #         a = np.random.randint(0, self.clients_num)
+            #     target.append(a)
         return target
 
     def get_segments(self, model_weights, seg, segment):
@@ -176,10 +191,12 @@ class Client:
         return np.array(result)
 
     def update_bandwidth(self,seg):
+        seg_size = sys.getsizeof(self.current_updates)
+        print(6666,seg_size)
         time = self.transfer_time[-1]
         for i in range(self.clients_num):
             if time[i] != -1:
-                self.pridict_bandwidth[i].append((SEG_SIZE / seg)/time[i])
+                self.pridict_bandwidth[i].append((seg_size / seg)/time[i])
 
     def get_transfer_time(self, env, client_simulate_list, bandwidth, my_round, idx_list,seg):
         events = [env.process(self.pull_seg(env, client_simulate_list[i], i, bandwidth, my_round, seg))
@@ -213,7 +230,8 @@ class Client:
               '】【Round: %s】【Id: %d】-----pulling-----【Id：%d】' % (my_round, self.idx, client_simulate.idx))
 
     def que_monitor(self, env, client_simulate, exit_bw, link_bw, bottleneck_num, seg):
-        residual_seg_size = SEG_SIZE / seg
+        seg_size = sys.getsizeof(self.current_updates)
+        residual_seg_size = seg_size / seg
         final_bw = np.min([exit_bw / bottleneck_num, link_bw])
         last_que = bottleneck_num
         while residual_seg_size >= 0:
