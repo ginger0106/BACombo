@@ -44,6 +44,10 @@ def parse_args():
                     help='batch size when clients train on data;',
                     type=int,
                     default=10)
+    parser.add_argument('-e',
+                    help='epl;',
+                    type=float,
+                    default=0.5)
     parser.add_argument('--seed',
                     help='seed for random client sampling and batch splitting',
                     type=int,
