@@ -135,7 +135,7 @@ if [ ! -d 'data/femnist/data/train' ]; then
 	echo "Couldn't find FEMNIST data - running data preprocessing script"
 	pushd data/femnist/
 		rm -rf meta/ data/test data/train data/rem_user_data data/intermediate
-		./preprocess.sh -s niid --sf 0.05 -k 100 -t sample --smplseed ${sampling_seed} --spltseed ${split_seed}
+		./preprocess.sh -s iid --sf 0.05 -k 100 -t sample --smplseed ${sampling_seed} --spltseed ${split_seed}
 	popd
 fi
 
