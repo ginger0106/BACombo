@@ -5,3 +5,4 @@ Pillow
 matplotlib
 jupyter
 pandas
+simpy
