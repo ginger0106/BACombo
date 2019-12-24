@@ -104,8 +104,38 @@ function run_bacombo() {
 	move_data ${output_dir} "run_combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}"
 }
 
+function gossip() {
+  val_pair="$1 $2 $3 $4"
+  echo ${val_pair}
+	num_epochs=`echo ${val_pair} | cut -d' ' -f1`
+  segment=`echo ${val_pair} | cut -d' ' -f2`
+	replica=`echo ${val_pair} | cut -d' ' -f3`
+	e=`echo ${val_pair} | cut -d' ' -f4`
+	echo "Running gossip experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
+	run_gossip  "${num_epochs}" "${segment}" "${replica}" "${e}" &
+}
 
+function combo() {
+  val_pair="$1 $2 $3 $4"
+  echo ${val_pair}
+  num_epochs=`echo ${val_pair} | cut -d' ' -f1`
+  segment=`echo ${val_pair} | cut -d' ' -f2`
+	replica=`echo ${val_pair} | cut -d' ' -f3`
+	e=`echo ${val_pair} | cut -d' ' -f4`
+	echo "Running combo experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
+	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}"&
+}
 
+function BAcombo() {
+  val_pair="$1 $2 $3 $4"
+  echo ${val_pair}
+	num_epochs=`echo ${val_pair} | cut -d' ' -f1`
+  segment=`echo ${val_pair} | cut -d' ' -f2`
+	replica=`echo ${val_pair} | cut -d' ' -f3`
+	e=`echo ${val_pair} | cut -d' ' -f4`
+	echo "Running BAcombo experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
+	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}"&
+}
 #function run_minibatch() {
 #	clients_per_round="$1"
 #	minibatch_percentage="$2"
@@ -155,36 +185,42 @@ echo "Storing results in directory ${output_dir} (please invoke this script as: 
 # Run Gossip experiments
 for val_pair in "${gossip_vals[@]}"; do
 #	clients_per_round=`echo ${val_pair} | cut -d' ' -f1`$
-  echo ${val_pair}
-	num_epochs=`echo ${val_pair} | cut -d' ' -f1`
-  segment=`echo ${val_pair} | cut -d' ' -f2`
-	replica=`echo ${val_pair} | cut -d' ' -f3`
-	e=`echo ${val_pair} | cut -d' ' -f4`
-	echo "Running gossip experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
-	run_gossip  "${num_epochs}" "${segment}" "${replica}" "${e}"
+   gossip $val_pair &
+#  echo ${val_pair}
+#	num_epochs=`echo ${val_pair} | cut -d' ' -f1`
+#  segment=`echo ${val_pair} | cut -d' ' -f2`
+#	replica=`echo ${val_pair} | cut -d' ' -f3`
+#	e=`echo ${val_pair} | cut -d' ' -f4`
+#	echo "Running gossip experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
+#	run_gossip  "${num_epochs}" "${segment}" "${replica}" "${e}" &
 done
+wait
 
 # Run combo experiments
 for val_pair in "${combo_vals[@]}"; do
 #	clients_per_round=`echo ${val_pair} | cut -d' ' -f1`
-	num_epochs=`echo ${val_pair} | cut -d' ' -f1`
-  segment=`echo ${val_pair} | cut -d' ' -f2`
-	replica=`echo ${val_pair} | cut -d' ' -f3`
-	e=`echo ${val_pair} | cut -d' ' -f4`
-	echo "Running combo experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
-	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}"
+#	num_epochs=`echo ${val_pair} | cut -d' ' -f1`
+#  segment=`echo ${val_pair} | cut -d' ' -f2`
+#	replica=`echo ${val_pair} | cut -d' ' -f3`
+#	e=`echo ${val_pair} | cut -d' ' -f4`
+#	echo "Running combo experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
+#	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}"&
+   combo $val_pair &
 done
+wait
 
 # Run BAcombo experiments
 for val_pair in "${BAcombo_vals[@]}"; do
 #	clients_per_round=`echo ${val_pair} | cut -d' ' -f1`
-	num_epochs=`echo ${val_pair} | cut -d' ' -f1`
-  segment=`echo ${val_pair} | cut -d' ' -f2`
-	replica=`echo ${val_pair} | cut -d' ' -f3`
-	e=`echo ${val_pair} | cut -d' ' -f4`
-	echo "Running BAcombo experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
-	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}"
+#	num_epochs=`echo ${val_pair} | cut -d' ' -f1`
+#  segment=`echo ${val_pair} | cut -d' ' -f2`
+#	replica=`echo ${val_pair} | cut -d' ' -f3`
+#	e=`echo ${val_pair} | cut -d' ' -f4`
+#	echo "Running BAcombo experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
+#	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}"&
+    BAcombo $val_pair &
 done
+wait
 
 popd
 
