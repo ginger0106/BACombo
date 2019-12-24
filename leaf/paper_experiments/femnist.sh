@@ -54,8 +54,8 @@ function move_data() {
 	suffix="$2"
 
 	pushd models/metrics
-		mv metrics_sys.csv "${path}/sys_metrics_${suffix}.csv"
-		mv metrics_stat.csv "${path}/stat_metrics_${suffix}.csv"
+		echo "your passwd"|sudo -S mv metrics_sys.csv "${path}/sys_metrics_${suffix}.csv"
+		echo "your passwd"|sudo -S mv metrics_stat.csv "${path}/stat_metrics_${suffix}.csv"
 	popd
 
 	cp -r data/femnist/meta "${path}"
@@ -112,7 +112,7 @@ function gossip() {
 	replica=`echo ${val_pair} | cut -d' ' -f3`
 	e=`echo ${val_pair} | cut -d' ' -f4`
 	echo "Running gossip experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
-	run_gossip  "${num_epochs}" "${segment}" "${replica}" "${e}" &
+	run_gossip  "${num_epochs}" "${segment}" "${replica}" "${e}"
 }
 
 function combo() {
@@ -123,7 +123,7 @@ function combo() {
 	replica=`echo ${val_pair} | cut -d' ' -f3`
 	e=`echo ${val_pair} | cut -d' ' -f4`
 	echo "Running combo experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
-	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}"&
+	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}"
 }
 
 function BAcombo() {
@@ -134,7 +134,7 @@ function BAcombo() {
 	replica=`echo ${val_pair} | cut -d' ' -f3`
 	e=`echo ${val_pair} | cut -d' ' -f4`
 	echo "Running BAcombo experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
-	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}"&
+	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}"
 }
 #function run_minibatch() {
 #	clients_per_round="$1"
@@ -185,7 +185,7 @@ echo "Storing results in directory ${output_dir} (please invoke this script as: 
 # Run Gossip experiments
 for val_pair in "${gossip_vals[@]}"; do
 #	clients_per_round=`echo ${val_pair} | cut -d' ' -f1`$
-   gossip $val_pair &
+   gossip $val_pair
 #  echo ${val_pair}
 #	num_epochs=`echo ${val_pair} | cut -d' ' -f1`
 #  segment=`echo ${val_pair} | cut -d' ' -f2`
@@ -205,7 +205,7 @@ for val_pair in "${combo_vals[@]}"; do
 #	e=`echo ${val_pair} | cut -d' ' -f4`
 #	echo "Running combo experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
 #	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}"&
-   combo $val_pair &
+   combo $val_pair
 done
 wait
 
@@ -218,7 +218,7 @@ for val_pair in "${BAcombo_vals[@]}"; do
 #	e=`echo ${val_pair} | cut -d' ' -f4`
 #	echo "Running BAcombo experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
 #	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}"&
-    BAcombo $val_pair &
+    BAcombo $val_pair
 done
 wait
 
