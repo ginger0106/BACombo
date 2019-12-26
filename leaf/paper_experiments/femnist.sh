@@ -4,41 +4,42 @@ output_dir="${1:-./baseline}"
 
 split_seed="1549786796"
 sampling_seed="1549786595"
-num_rounds="1"
+num_rounds="200"
 
 fedavg_lr="0.004"
 declare -a fedavg_vals=( "3 1"
 			 "3 100"
 			 "35 1" )
 
-declare -a gossip_vals=( "10 1 5 0.5"
+declare -a gossip_vals=( "1 1 5 0.5"
 )
 
-declare -a combo_vals=( "10 1 5 0.5"
-         "10 2 5 0.5"
-         "10 4 5 0.5"
-         "10 8 5 0.5"
-         "10 10 5 0.5"
-         "10 8 1 0.5"
-         "10 8 2 0.5"
-         "10 8 4 0.5"
-         "10 8 8 0.5"
-         "10 8 10 0.5"
+declare -a combo_vals=( "1 1 5 0.5"
+         "1 2 5 0.5"
+         "1 4 5 0.5"
+         "1 8 5 0.5"
+         "1 10 5 0.5"
+         "1 8 1 0.5"
+         "1 8 2 0.5"
+         "1 8 4 0.5"
+         "1 8 8 0.5"
+         "1 8 10 0.5"
 )
 
-declare -a BAcombo_vals=( "10 1 5 0.5"
-         "10 2 5 0.5"
-         "10 4 5 0.5"
-         "10 8 5 0.5"
-         "10 10 5 0.5"
-         "10 8 1 0.5"
-         "10 8 2 0.5"
-         "10 8 4 0.5"
-         "10 8 8 0.5"
-         "10 8 10 0.5"
-          "10 8 5 0.2"
-          "10 8 5 0.4"
-          "10 8 5 0.8"
+
+declare -a BAcombo_vals=( "1 1 5 0.5"
+         "1 2 5 0.5"
+         "1 4 5 0.5"
+         "1 8 5 0.5"
+         "1 10 5 0.5"
+         "1 8 1 0.5"
+         "1 8 2 0.5"
+         "1 8 4 0.5"
+         "1 8 8 0.5"
+         "1 8 10 0.5"
+         "1 8 5 0.2"
+         "1 8 5 0.4"
+         "1 8 5 0.8"
 )
 
 
@@ -54,8 +55,8 @@ function move_data() {
 	suffix="$2"
 
 	pushd models/metrics
-		echo "your passwd"|sudo -S mv metrics_sys.csv "${path}/sys_metrics_${suffix}.csv"
-		echo "your passwd"|sudo -S mv metrics_stat.csv "${path}/stat_metrics_${suffix}.csv"
+		mv ${suffix}_sys.csv "${path}/sys_metrics_${suffix}.csv"
+		mv ${suffix}_stat.csv "${path}/stat_metrics_${suffix}.csv"
 	popd
 
 	cp -r data/femnist/meta "${path}"
@@ -70,8 +71,8 @@ function run_gossip() {
 
 	pushd models/
 #		python main.py -dataset 'femnist' -model 'cnn' --num-rounds ${num_rounds} --clients-per-round ${clients_per_round} --num-epochs ${num_epochs} -lr ${fedavg_lr}
-		python main.py -dataset 'femnist' -model 'cnn' -algorithm gossip --num-rounds ${num_rounds} --num-epochs ${num_epochs} -lr ${fedavg_lr} --segment ${segment} --replica ${replica} --eval-every 1 -e ${e}
-
+		python main.py -dataset 'femnist' -model 'cnn' -algorithm gossip --num-rounds ${num_rounds} --num-epochs \
+		${num_epochs} -lr ${fedavg_lr} --segment ${segment} --replica ${replica} --eval-every 1 -e ${e} --metrics-name "gossip_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}" > "gossip_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}.log"
 	popd
 	move_data ${output_dir} "gossip_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}"
 }
@@ -84,10 +85,10 @@ function run_combo() {
 
 	pushd models/
 #		python main.py -dataset 'femnist' -model 'cnn' --num-rounds ${num_rounds} --clients-per-round ${clients_per_round} --num-epochs ${num_epochs} -lr ${fedavg_lr}
-		python main.py -dataset 'femnist' -model 'cnn' -algorithm combo --num-rounds ${num_rounds} --num-epochs ${num_epochs} -lr ${fedavg_lr} --segment ${segment} --replica ${replica} --eval-every 1 -e ${e}
-
+		python main.py -dataset 'femnist' -model 'cnn' -algorithm combo --num-rounds ${num_rounds} --num-epochs \
+		${num_epochs} -lr ${fedavg_lr} --segment ${segment} --replica ${replica} --eval-every 1 -e ${e}  --metrics-name "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}" > "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}.log"
 	popd
-	move_data ${output_dir} "run_combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}"
+	move_data ${output_dir} "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}"
 }
 
 function run_bacombo() {
@@ -98,10 +99,10 @@ function run_bacombo() {
 
 	pushd models/
 #		python main.py -dataset 'femnist' -model 'cnn' --num-rounds ${num_rounds} --clients-per-round ${clients_per_round} --num-epochs ${num_epochs} -lr ${fedavg_lr}
-		python main.py -dataset 'femnist' -model 'cnn' -algorithm BAcombo --num-rounds ${num_rounds} --num-epochs ${num_epochs} -lr ${fedavg_lr} --segment ${segment} --replica ${replica} --eval-every 1 -e ${e}
-
+		python main.py -dataset 'femnist' -model 'cnn' -algorithm BACombo --num-rounds ${num_rounds} --num-epochs \
+		${num_epochs} -lr ${fedavg_lr} --segment ${segment} --replica ${replica} --eval-every 1 -e ${e} --metrics-name "bacombo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}" > "bacombo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}.log"
 	popd
-	move_data ${output_dir} "run_combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}"
+	move_data ${output_dir} "bacombo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}"
 }
 
 function gossip() {
@@ -112,7 +113,7 @@ function gossip() {
 	replica=`echo ${val_pair} | cut -d' ' -f3`
 	e=`echo ${val_pair} | cut -d' ' -f4`
 	echo "Running gossip experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
-	run_gossip  "${num_epochs}" "${segment}" "${replica}" "${e}"
+	run_gossip  "${num_epochs}" "${segment}" "${replica}" "${e}" &
 }
 
 function combo() {
@@ -123,7 +124,7 @@ function combo() {
 	replica=`echo ${val_pair} | cut -d' ' -f3`
 	e=`echo ${val_pair} | cut -d' ' -f4`
 	echo "Running combo experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
-	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}"
+	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}" &
 }
 
 function BAcombo() {
@@ -134,7 +135,7 @@ function BAcombo() {
 	replica=`echo ${val_pair} | cut -d' ' -f3`
 	e=`echo ${val_pair} | cut -d' ' -f4`
 	echo "Running BAcombo experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
-	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}"
+	run_bacombo  "${num_epochs}" "${segment}" "${replica}" "${e}" &
 }
 #function run_minibatch() {
 #	clients_per_round="$1"
@@ -150,12 +151,22 @@ function BAcombo() {
 ##################### Script #################################
 pushd ../
 
+#remove last time data
+pushd  models/metrics
+  find .  -name '*.csv'  |xargs rm -rf
+popd
+
+pushd  baseline
+  find .  -name '*.csv'  |xargs rm -rf
+popd
+
 # Check that data and models are available
 if [ ! -d 'data/' -o ! -d 'models/' ]; then
 	echo "Couldn't find data/ and/or models/ directories - please run this script from the root of the LEAF repo"
 fi
 
-# If data unavailable, execute pre-processing script
+# If data unavailable, execute pre-processing script  sss
+
 if [ ! -d 'data/femnist/data/train' ]; then
 	if [ ! -f 'data/femnist/preprocess.sh' ]; then
 		echo "Couldn't find data/ and/or models/ directories - please obtain scripts from GitHub repo: https://github.com/TalwalkarLab/leaf"
@@ -182,10 +193,10 @@ echo "Storing results in directory ${output_dir} (please invoke this script as: 
 #	run_minibatch "${clients_per_round}" "${minibatch_percentage}"
 #done
 
-# Run Gossip experiments
+ #Run Gossip experiments
 for val_pair in "${gossip_vals[@]}"; do
 #	clients_per_round=`echo ${val_pair} | cut -d' ' -f1`$
-   gossip $val_pair
+   gossip $val_pair &
 #  echo ${val_pair}
 #	num_epochs=`echo ${val_pair} | cut -d' ' -f1`
 #  segment=`echo ${val_pair} | cut -d' ' -f2`
@@ -205,7 +216,7 @@ for val_pair in "${combo_vals[@]}"; do
 #	e=`echo ${val_pair} | cut -d' ' -f4`
 #	echo "Running combo experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
 #	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}"&
-   combo $val_pair
+   combo $val_pair &
 done
 wait
 
@@ -218,7 +229,7 @@ for val_pair in "${BAcombo_vals[@]}"; do
 #	e=`echo ${val_pair} | cut -d' ' -f4`
 #	echo "Running BAcombo experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
 #	run_combo  "${num_epochs}" "${segment}" "${replica}" "${e}"&
-    BAcombo $val_pair
+    BAcombo $val_pair &
 done
 wait
 
