@@ -37,24 +37,24 @@ Each worker has to send $S\times R$ segment pulling requests to the other worker
 
 
 
-\begin{algorithm}
-    \label{alg:restrict_update}
-    \SetAlgoLined
-    \SetKwInOut{KIn}{Input}
-    \SetKwInOut{KOut}{Output}
-    \caption{Restricted local update}
-    \KIn{client $k$, global weights $w$, interval $\tau$}
-    \KOut{local training result $w^\prime$}
-    $w^\prime \leftarrow w$\;
-    \For{local iteration $i=1,2,\dots, \tau$}{
-        $b \leftarrow$ random batch of training samples\;
-        $g \leftarrow$ the gradients of $w^\prime$ on batch $b$\;
-        \eIf{$w^\prime$ is overfitted}{
-            \textbf{break}\;
-        }{
-        $w^\prime \leftarrow w^\prime - \mu g$\;
-        }
-    }
-    \Return $w^\prime$
-\end{algorithm}
+% \begin{algorithm}
+%     \label{alg:restrict_update}
+%     \SetAlgoLined
+%     \SetKwInOut{KIn}{Input}
+%     \SetKwInOut{KOut}{Output}
+%     \caption{Restricted local update}
+%     \KIn{client $k$, global weights $w$, interval $\tau$}
+%     \KOut{local training result $w^\prime$}
+%     $w^\prime \leftarrow w$\;
+%     \For{local iteration $i=1,2,\dots, \tau$}{
+%         $b \leftarrow$ random batch of training samples\;
+%         $g \leftarrow$ the gradients of $w^\prime$ on batch $b$\;
+%         \eIf{$w^\prime$ is overfitted}{
+%             \textbf{break}\;
+%         }{
+%         $w^\prime \leftarrow w^\prime - \mu g$\;
+%         }
+%     }
+%     \Return $w^\prime$
+% \end{algorithm}
 
