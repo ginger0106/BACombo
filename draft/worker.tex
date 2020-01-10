@@ -1,4 +1,4 @@
-\section{Segmented Gossip Aggregation}
+\section{Bandwidth-Aware Segmented Gossip Aggregation}
 
 Now consider the network topology with $n$ workers. An all-reduce worker pushes $n-1$ local model replicates to the other workers through $n-1$ links while a gossip worker is expected to push one local model replicate out through only one link. Within a datacenter where the workers are connected by the local area network, they can always communicate with each other at maximum bandwidth thus the gossip worker can achieve great speed up as the transmission size is drastically reduced.
 
@@ -24,6 +24,11 @@ For each segment $l$, the worker chooses a peer worker which we denote it as $j_
 The naive gossip-based scheme pulls all the segments from a single peer worker. However, with segmented pulling, if we choose a different peer for each segment, the total transmission size is still equal to one model, like the naive gossip-based schemes, but the traffic is dissolved among not one but $S$ links.
 
 
+\subsubsection{Bandwidth-Aware Worker Selection}
+The WAN bandwidth not only varies significantly between different regions (e.g., up to $12 \times$ of bandwidth variance between geographically-close regions and distant regions), but also is time-varying (e.g., up to $10 \times$ of bandwidth variance within a day), as shown by other systems \ref{}.  Thus, to reduce the transmission time, we tend to select 
+
+Taking the advantage of epsilon-greedy, we 
+
 
 %\begin{figure}[H]
 %\centering 
@@ -44,7 +49,7 @@ In traditional distributed ML scenario within the datacenter, the gossip-based s
 Thus as a compromise, we set a hyper-parameter \textit{Model Replica} $R$ which represents the number of the mixed model gathered by segmented pulling. To rebuild $R$ mixed models, the worker will pull $S \times R$ segments from peers. Thus increasing the value of $R$ means more segments have to be transferred through the network, which may cause bandwidth overhead. But this is necessary to accelerate the propagation and ensure the model quality. Since there is no centralized server bottleneck, the model training speed could still be faster even with extra transmission.
 
 
-\subsubsection{Bandwidth-Aware Client Selection}
+\subsubsection{Bandwidth-Aware Gossip Aggregation}
 \begin{algorithm}[!t]
 
 \caption{Bandwidth-Aware Combo (BACombo)}
