@@ -3,7 +3,7 @@
 OUTPUT_DIR=${1:-"./baseline"}
 
 # Each value is (k, seed) pair
-declare -a k_vals=( "100 1549774894" "30 1549775083" "10 1549775860" "3 1549780473" )
+declare -a k_vals=( "100 8 5 0.5 1549774894" "30 8 5 0.5 1549775083" "10 8 5 0.5 1549775860" "3 8 5 0.5 1549780473" )
 
 ###################### Functions ###################################
 
@@ -13,30 +13,58 @@ function get_k_data() {
 
 	pushd data/sent140/
 		rm -rf meta/ data/
-		./preprocess.sh --sf 0.5 -k ${keep_clients} -s niid -t sample --spltseed ${split_seed}
+		./preprocess.sh --sf 0.5 -k ${keep_clients} -s iid -t sample --spltseed ${split_seed}
 	popd
 }
+
+#function move_data() {
+#	path="$1"
+#	suffix="$2"
+#
+#	pushd models/metrics
+#		mv sys_metrics.csv "${path}/sys_metrics_${suffix}.csv"
+#		mv stat_metrics.csv "${path}/stat_metrics_${suffix}.csv"
+#	popd
+#
+#	cp -r data/sent140/meta "${path}"
+#	mv "${path}/meta" "${path}/meta_${suffix}"
+#}
 
 function move_data() {
 	path="$1"
 	suffix="$2"
-	
+
 	pushd models/metrics
-		mv sys_metrics.csv "${path}/sys_metrics_${suffix}.csv"
-		mv stat_metrics.csv "${path}/stat_metrics_${suffix}.csv"
+		mv ${suffix}_sys.csv "${path}/sys_metrics_${suffix}.csv"
+		mv ${suffix}_stat.csv "${path}/stat_metrics_${suffix}.csv"
 	popd
 
 	cp -r data/sent140/meta "${path}"
 	mv "${path}/meta" "${path}/meta_${suffix}"
 }
 
+#function run_k() {
+#	k="$1"
+#	get_k_data "$k"
+#	pushd models
+#		python main.py -dataset 'sent140' -model 'stacked_lstm' --num-rounds 10 --clients-per-round 2
+#	popd
+#	move_data ${OUTPUT_DIR} "k_${k}"
+#}
+
 function run_k() {
 	k="$1"
-	get_k_data "$k"
+	segment="$2"
+	replica="$3"
+	e="$4"
+	seed="$5"
+	get_k_data "$k" "$seed"
 	pushd models
-		python main.py -dataset 'sent140' -model 'stacked_lstm' --num-rounds 10 --clients-per-round 2
+		python main.py -dataset 'sent140' -model 'stacked_lstm' --num-rounds 10  -algorithm BACombo --segment ${segment} --replica ${replica} \
+		--eval-every 1 -e ${e} --metrics-name "bacombo_s_${segment}_r_${replica}_e_${e}_k_${k}" > \
+		"bacombo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}_k_${k}.log"
 	popd
-	move_data ${OUTPUT_DIR} "k_${k}"
+	move_data ${OUTPUT_DIR} "bacombo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}_k_${k}"
 }
 
 ###################### Script ########################################
@@ -65,8 +93,11 @@ popd
 
 for val_pair in "${k_vals[@]}"; do
 	k_val=`echo ${val_pair} | cut -d' ' -f1`
-	seed=`echo ${val_pair} | cut -d' ' -f2`
-	run_k "${k_val}" "${seed}"
+	segment=`echo ${val_pair} | cut -d' ' -f2`
+	replica=`echo ${val_pair} | cut -d' ' -f3`
+	e=`echo ${val_pair} | cut -d' ' -f4`
+	seed=`echo ${val_pair} | cut -d' ' -f5`
+	run_k "${k_val}" "${segment}" "${replica}" "${e}" "${seed}"
 	echo "Completed k=${k_val}"
 done
 

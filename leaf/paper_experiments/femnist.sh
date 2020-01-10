@@ -15,21 +15,21 @@ declare -a gossip_vals=( "1 1 5 0.5"
 )
 
 declare -a combo_vals=( "1 1 5 0.5"
-         "1 2 5 0.5"
-         "1 4 5 0.5"
-         "1 8 5 0.5"
-         "1 10 5 0.5"
-         "1 8 1 0.5"
-         "1 8 2 0.5"
-         "1 8 4 0.5"
-         "1 8 8 0.5"
-         "1 8 10 0.5"
+#         "1 2 5 0.5"
+#         "1 4 5 0.5"
+#         "1 8 5 0.5"
+#         "1 10 5 0.5"
+#         "1 8 1 0.5"
+#         "1 8 2 0.5"
+#         "1 8 4 0.5"
+#         "1 8 8 0.5"
+#         "1 8 10 0.5"
 )
 
 
 declare -a BAcombo_vals=( "1 1 5 0.5"
-         "1 2 5 0.5"
-         "1 4 5 0.5"
+#         "1 2 5 0.5"
+#         "1 4 5 0.5"
 #         "1 8 5 0.5"
 #         "1 10 5 0.5"
 #         "1 8 1 0.5"
@@ -72,7 +72,7 @@ function run_gossip() {
 	pushd models/
 #		python main.py -dataset 'femnist' -model 'cnn' --num-rounds ${num_rounds} --clients-per-round ${clients_per_round} --num-epochs ${num_epochs} -lr ${fedavg_lr}
 		python main.py -dataset 'femnist' -model 'cnn' -algorithm gossip --num-rounds ${num_rounds} --num-epochs \
-		${num_epochs} -lr ${fedavg_lr} --segment ${segment} --replica ${replica} --eval-every 1 -e ${e} --metrics-name "gossip_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}" > "gossip_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}.log"
+		${num_epochs} -lr ${fedavg_lr} --segment ${segment} --replica ${replica} --eval-every 1 -e ${e} --metrics-name "gossip_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}" > "gossip_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}.log" &
 	popd
 	move_data ${output_dir} "gossip_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}"
 }
@@ -86,7 +86,8 @@ function run_combo() {
 	pushd models/
 #		python main.py -dataset 'femnist' -model 'cnn' --num-rounds ${num_rounds} --clients-per-round ${clients_per_round} --num-epochs ${num_epochs} -lr ${fedavg_lr}
 		python main.py -dataset 'femnist' -model 'cnn' -algorithm combo --num-rounds ${num_rounds} --num-epochs \
-		${num_epochs} -lr ${fedavg_lr} --segment ${segment} --replica ${replica} --eval-every 1 -e ${e}  --metrics-name "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}" > "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}.log"
+		${num_epochs} -lr ${fedavg_lr} --segment ${segment} --replica ${replica} --eval-every 1 -e ${e}  \
+		--metrics-name  "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}" > "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}.log" &
 	popd
 	move_data ${output_dir} "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}"
 }
@@ -100,7 +101,7 @@ function run_bacombo() {
 	pushd models/
 #		python main.py -dataset 'femnist' -model 'cnn' --num-rounds ${num_rounds} --clients-per-round ${clients_per_round} --num-epochs ${num_epochs} -lr ${fedavg_lr}
 		python main.py -dataset 'femnist' -model 'cnn' -algorithm BACombo --num-rounds ${num_rounds} --num-epochs \
-		${num_epochs} -lr ${fedavg_lr} --segment ${segment} --replica ${replica} --eval-every 1 -e ${e} --metrics-name "bacombo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}" > "bacombo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}.log"
+		${num_epochs} -lr ${fedavg_lr} --segment ${segment} --replica ${replica} --eval-every 1 -e ${e} --metrics-name "bacombo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}" > "bacombo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}.log" &
 	popd
 	move_data ${output_dir} "bacombo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}"
 }
