@@ -176,9 +176,9 @@ if [ "$CONT_SCRIPT" = true ] && [ ! $SAMPLE = "na" ]; then
         SEED_ARGUMENT="${SAMPLING_SEED:--1}" 
 
         if [ $SAMPLE = "iid" ]; then
-            LEAF_DATA_META_DIR=${META_DIR} python3 sample.py $NAMETAG --iid $IUSERTAG $SFRACTAG --seed ${SEED_ARGUMENT}
+            LEAF_DATA_META_DIR=${META_DIR} python sample.py $NAMETAG --iid $IUSERTAG $SFRACTAG --seed ${SEED_ARGUMENT}
         else
-            LEAF_DATA_META_DIR=${META_DIR} python3 sample.py $NAMETAG $SFRACTAG --seed ${SEED_ARGUMENT}
+            LEAF_DATA_META_DIR=${META_DIR} python sample.py $NAMETAG $SFRACTAG --seed ${SEED_ARGUMENT}
         fi
 
         cd ../$NAME
@@ -197,9 +197,9 @@ if [ "$CONT_SCRIPT" = true ] && [ ! $MINSAMPLES = "na" ]; then
         cd ../utils
 
         if [ -z $MINSAMPLES ]; then
-            python3 remove_users.py $NAMETAG
+            python remove_users.py $NAMETAG
         else
-            python3 remove_users.py $NAMETAG --min_samples $MINSAMPLES
+            python remove_users.py $NAMETAG --min_samples $MINSAMPLES
         fi
 
         cd ../$NAME
@@ -229,11 +229,11 @@ if [ "$CONT_SCRIPT" = true ] && [ ! $TRAIN = "na" ]; then
         SEED_ARGUMENT="${SPLIT_SEED:--1}"
 
         if [ -z $TRAIN ]; then
-            LEAF_DATA_META_DIR=${META_DIR} python3 split_data.py $NAMETAG $TFRACTAG --seed ${SEED_ARGUMENT}
+            LEAF_DATA_META_DIR=${META_DIR} python split_data.py $NAMETAG $TFRACTAG --seed ${SEED_ARGUMENT}
         elif [ $TRAIN = "user" ]; then
-            LEAF_DATA_META_DIR=${META_DIR} python3 split_data.py $NAMETAG --by_user $TFRACTAG --seed ${SEED_ARGUMENT}
+            LEAF_DATA_META_DIR=${META_DIR} python split_data.py $NAMETAG --by_user $TFRACTAG --seed ${SEED_ARGUMENT}
         elif [ $TRAIN = "sample" ]; then
-            LEAF_DATA_META_DIR=${META_DIR} python3 split_data.py $NAMETAG --by_sample $TFRACTAG --seed ${SEED_ARGUMENT}
+            LEAF_DATA_META_DIR=${META_DIR} python split_data.py $NAMETAG --by_sample $TFRACTAG --seed ${SEED_ARGUMENT}
         fi
 
         cd ../$NAME

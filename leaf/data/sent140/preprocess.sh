@@ -12,6 +12,8 @@ NAME="sent140" # name of the dataset, equivalent to directory name
 
 cd ../utils
 
+echo "33333"
+echo "$@"
 ./preprocess.sh --name $NAME $@
 
 cd ../$NAME
