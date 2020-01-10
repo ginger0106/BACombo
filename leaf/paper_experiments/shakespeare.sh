@@ -2,21 +2,20 @@
 
 output_dir="${1:-'./baseline'}"
 
-split_seed=""
-sampling_seed=""
+split_seed="4543"
+sampling_seed="2334"
 
 declare -a local_epochs=( "20" "1" )
 
 
 ###################### Functions ###################################
-
 function move_data() {
     path="$1"
     suffix="$2"
     
     pushd models/metrics
-        mv sys_metrics.csv "${path}/sys_metrics_${suffix}.csv"
-        mv stat_metrics.csv "${path}/stat_metrics_${suffix}.csv"
+      mv ${suffix}_sys.csv "${path}/sys_metrics_${suffix}.csv"
+      mv ${suffix}_stat.csv "${path}/stat_metrics_${suffix}.csv"
     popd
 
     cp -rf data/shakespeare/meta "${path}"
@@ -27,11 +26,12 @@ function run_experiment() {
     num_epochs="${1}"
     pushd models/
         python -u main.py -dataset shakespeare -model stacked_lstm --seed 0 --num-rounds 80 \
-                  --clients-per-round 10 --num_epochs ${num_epochs} -lr 0.8
+                  --clients-per-round 10 --num-epochs ${num_epochs} -lr 0.8 -algorithm BACombo --segment 8 --replica 5 \
+		--eval-every 1 -e 0.5 --metrics-name "shakespeare_c_10_rnd_80_e_${num_epochs} "
+#		> "shakespeare_c_10_rnd_80_e_${num_epochs}.log"
     popd
     move_data ${output_dir} "shakespeare_c_10_rnd_80_e_${num_epochs}"
 }
-
 
 ##################### Script #################################
 pushd ../
@@ -58,7 +58,7 @@ if [ ! -d 'data/shakespeare/data/train' ]; then
          "running data preprocessing script"
     pushd data/shakespeare/
         rm -rf meta/ data/all_data data/test data/train data/rem_user_data data/intermediate
-        ./preprocess.sh -s niid --sf 0.05 -k 64 -tf 0.9 -t sample
+        ./preprocess.sh -s iid --sf 0.05 -k 64 -tf 0.9 -t sample
     popd
 fi
 
