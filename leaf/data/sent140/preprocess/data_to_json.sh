@@ -18,7 +18,7 @@ if [ ! -d "../data/intermediate" ]; then
   echo "------------------------------"
   echo "combining raw_data .csv files"
   mkdir ../data/intermediate
-  python3 combine_data.py
+  python combine_data.py
   echo "finished combining raw_data .csv files"
 fi
 
@@ -26,6 +26,6 @@ if [ ! -d "../data/all_data" ]; then
   echo "------------------------------"
   echo "converting data to .json format"
   mkdir ../data/all_data
-  python3 data_to_json.py
+  python data_to_json.py
   echo "finished converting data to .json format"
 fi
