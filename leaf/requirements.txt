@@ -1,6 +1,6 @@
 numpy
 scipy
-tensorflow
+tensorflow-gpu==1.14
 Pillow
 matplotlib
 jupyter

@@ -100,6 +100,7 @@ class set_up():
     #     #     c.seg_transfer_time = [0]*client_num
 
     def round_proc(self, my_round):
+        random_num = np.random.rand()
         sys_metrics = {
             c.id: {BYTES_WRITTEN_KEY: 0,
                    BYTES_READ_KEY: 0,
@@ -119,22 +120,32 @@ class set_up():
         if self.args.algorithm == 'gossip':
             print(3333)
             for c in self.clients:
-                c.update_model(self.args.replica, 1, self.server)
+                c.update_model(self.args.replica, 1, self.server,random_num)
+                # c.metrics = c.test(my_round,'test')
         elif self.args.algorithm == 'combo':
             for c in self.clients:
-                c.update_model(self.args.replica, self.args.segment, self.server)
+                c.update_model(self.args.replica, self.args.segment, self.server,random_num)
+                # c.metrics = c.test(my_round,'test')
         elif self.args.algorithm == 'BACombo':
+
             for c in self.clients:
-                c.update_model(self.args.replica, self.args.segment, self.server)
+                c.update_model(self.args.replica, self.args.segment, self.server,random_num)
+
             for c in self.clients:
                 c.update_bandwidth(self.args.segment)
+
         self.server.updates = []
-        self.server.model = self.clients[0].model1
+        # print_metrics(test_stat_metrics, num_samples, prefix='test_')
+
+        # self.server.model = self.clients[0].model1
         print(4444)
+        # self.stat_writer_fn = get_stat_writer_function(self.client_ids, self.client_groups, self.client_num_samples,
+        #                                                self.args)
         events = [self.env.process(c.train_time_simulate(self.env,  my_round, self.clients, self.server.bandwidth,
-                                                         self.replica,self.args.segment)) for c in self.clients]
+                                                         self.replica,self.args.segment,
+                                                         random_num)) for c in self.clients]
         print(555)
-        yield AnyOf(self.env,events)
+        yield AllOf(self.env,events)
 
 
     def main_process(self):
@@ -144,12 +155,12 @@ class set_up():
             print('--- Random Initialization ---1111')
             self.stat_writer_fn = get_stat_writer_function(self.client_ids, self.client_groups, self.client_num_samples, self.args)
             self.sys_writer_fn = get_sys_writer_function(self.args)
-            print_stats(0, self.server, self.clients, self.client_num_samples, self.args, self.stat_writer_fn)
+            print_stats(self.env,0, self.server, self.clients, self.client_num_samples, self.args, self.stat_writer_fn)
         else:
             print('--- Random Initialization ---2222')
             self.stat_writer_fn = get_stat_writer_function(self.client_ids, self.client_groups, self.client_num_samples, self.args)
             self.sys_writer_fn = get_sys_writer_function(self.args)
-            print_stats(0, self.server, self.clients, self.client_num_samples, self.args, self.stat_writer_fn)
+            # print_stats(0, self.server, self.clients, self.client_num_samples, self.args, self.stat_writer_fn)
             clients_per_round = len(self.clients)
 
         for i in range( self.num_rounds):
@@ -185,10 +196,12 @@ class set_up():
                 # self.server.model = self.clients[0].model
     
             # Test model
-            if (i + 1) % self.eval_every == 0 or (i + 1) == self.num_rounds:
-                # stat_writer_fn = get_stat_writer_function(self.client_ids, self.client_groups, self.client_num_samples,
-                #                                           self.args)
-                print_stats(i + 1, self.server, self.clients, self.client_num_samples, self.args, self.stat_writer_fn)
+            signal = [c.test_signal for c in self.clients]  #
+            if  (i + 1) == self.num_rounds or (i + 1) % self.eval_every == 0:
+                self.stat_writer_fn = get_stat_writer_function(self.client_ids, self.client_groups, self.client_num_samples,
+                                                          self.args)
+
+                print_stats(self.env,i+1, self.server, self.clients, self.client_num_samples, self.args, self.stat_writer_fn)
 
         # Save server model
         ckpt_path = os.path.join('checkpoints', self.args.dataset)
@@ -254,7 +267,7 @@ def get_sys_writer_function(args):
     return writer_fn
 
 
-def print_stats(num_round, server, clients, num_samples, args, writer):
+def print_stats(env,num_round, server, clients, num_samples, args, writer):
     args = parse_args()
     if args.algorithm == 'fedavg':
         train_stat_metrics = server.test_model(clients, set_to_use='train')
@@ -264,17 +277,17 @@ def print_stats(num_round, server, clients, num_samples, args, writer):
         print_metrics(test_stat_metrics, num_samples, prefix='test_')
         writer(num_round, test_stat_metrics, 'test')
     else:
-        train_stat_metrics = {}
-        for client in clients:
-            client.model1 = server.model
-            c_metrics = client.test('train')
-            train_stat_metrics[client.id] = c_metrics
-        print_metrics(train_stat_metrics, num_samples, prefix='train_')
-        writer(num_round, train_stat_metrics, 'train')
+        # train_stat_metrics = {}
+        # for client in clients:
+        #     #client.model1 = server.model
+        #     c_metrics = client.test('train')
+        #     train_stat_metrics[client.id] = c_metrics
+        # print_metrics(train_stat_metrics, num_samples, prefix='train_')
+        # writer(num_round, train_stat_metrics, 'train')
         test_stat_metrics = {}
         for client in clients:
-            client.model1 = server.model
-            c_metrics = client.test('test')
+            #client.model1 = server.model
+            c_metrics = client.test(num_round,'test')
             test_stat_metrics[client.id] = c_metrics
         print_metrics(test_stat_metrics, num_samples, prefix='test_')
         writer(num_round, test_stat_metrics, 'test')

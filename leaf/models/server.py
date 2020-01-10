@@ -24,7 +24,7 @@ class Server:
                 if i == j:
                     a.append(0)
                 else:
-                    a.append(np.random.randint(1, 10))
+                    a.append(np.random.randint(1, 20))
             self.bandwidth.append(a)
 
     def select_clients(self, my_round, possible_clients, num_clients=20):
@@ -135,7 +135,7 @@ class Server:
 
         for client in clients_to_test:
             client.model.set_params(self.model)
-            c_metrics = client.test(set_to_use)
+            c_metrics = client.test(1,set_to_use) #### my_round
             metrics[client.id] = c_metrics
         
         return metrics

@@ -30,16 +30,16 @@ declare -a combo_vals=( "1 1 5 0.5"
 declare -a BAcombo_vals=( "1 1 5 0.5"
          "1 2 5 0.5"
          "1 4 5 0.5"
-         "1 8 5 0.5"
-         "1 10 5 0.5"
-         "1 8 1 0.5"
-         "1 8 2 0.5"
-         "1 8 4 0.5"
-         "1 8 8 0.5"
-         "1 8 10 0.5"
-         "1 8 5 0.2"
-         "1 8 5 0.4"
-         "1 8 5 0.8"
+#         "1 8 5 0.5"
+#         "1 10 5 0.5"
+#         "1 8 1 0.5"
+#         "1 8 2 0.5"
+#         "1 8 4 0.5"
+#         "1 8 8 0.5"
+#         "1 8 10 0.5"
+#         "1 8 5 0.2"
+#         "1 8 5 0.4"
+#         "1 8 5 0.8"
 )
 
 
@@ -193,7 +193,7 @@ echo "Storing results in directory ${output_dir} (please invoke this script as: 
 #	run_minibatch "${clients_per_round}" "${minibatch_percentage}"
 #done
 
- #Run Gossip experiments
+# Run Gossip experiments
 for val_pair in "${gossip_vals[@]}"; do
 #	clients_per_round=`echo ${val_pair} | cut -d' ' -f1`$
    gossip $val_pair &
