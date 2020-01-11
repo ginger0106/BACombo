@@ -87,7 +87,7 @@ function run_combo() {
 #		python main.py -dataset 'femnist' -model 'cnn' --num-rounds ${num_rounds} --clients-per-round ${clients_per_round} --num-epochs ${num_epochs} -lr ${fedavg_lr}
 		python main.py -dataset 'femnist' -model 'cnn' -algorithm combo --num-rounds ${num_rounds} --num-epochs \
 		${num_epochs} -lr ${fedavg_lr} --segment ${segment} --replica ${replica} --eval-every 1 -e ${e}  \
-		--metrics-name  "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}" > "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}.log" &
+		--metrics-name  "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}" > "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}.log"
 	popd
 	move_data ${output_dir} "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}"
 }
@@ -114,7 +114,7 @@ function gossip() {
 	replica=`echo ${val_pair} | cut -d' ' -f3`
 	e=`echo ${val_pair} | cut -d' ' -f4`
 	echo "Running gossip experiment with ${num_epochs} local epochs, ${segment} segments, ${replica} replica, ${e} e. "
-	run_gossip  "${num_epochs}" "${segment}" "${replica}" "${e}" 
+	run_gossip  "${num_epochs}" "${segment}" "${replica}" "${e}"
 }
 
 function combo() {
