@@ -13,7 +13,7 @@ function get_k_data() {
 
 	pushd data/sent140/
 		rm -rf meta/ data/
-		./preprocess.sh --sf 0.5 -k ${keep_clients} -s iid -t sample --spltseed ${split_seed}
+		./preprocess.sh --sf 0.05 -k ${keep_clients} -s iid -t sample --spltseed ${split_seed}
 	popd
 }
 
