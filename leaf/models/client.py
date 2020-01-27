@@ -94,7 +94,6 @@ class Client:
         self.training_time = (end_time - start_time).seconds
         return comp, num_train_samples, update
 
-
     def flat_updates(self, model_weights):
         self.shape_list = []
         flat_m = []
@@ -103,12 +102,12 @@ class Client:
             flat_m.extend(list(x.ravel()))
         return flat_m
 
-    def update_model(self, replica, segment, server,num):
+    def update_model(self, replica, segment, server,num,my_round):
         print('-----update[%s]------' % self.idx)
         weight_list = []
         sum_sample = 0
         for p in range(segment):
-            target = self.choose_best_segment(e, replica,num)
+            target = self.choose_best_segment(e, replica,num,my_round,p)
             segment_weight = server.updates[self.idx][0] * self.get_segments(server.updates[self.idx][1], p, segment)
             sum_sample += server.updates[self.idx][0]
             # segment_weight = self.get_segments(self.updates_flat, p, segment)
@@ -123,13 +122,14 @@ class Client:
             weight_list = np.concatenate((weight_list, segment_weight), axis=None)
             # weight_list.extend(weight_list)
         # print('segment done',len(sum_sample))
-        average_weight = segment * np.float16(weight_list) / sum_sample
+        average_weight = segment * np.float64(weight_list) / sum_sample
+        #
+        #
         # weight_list = np.array(weight_list)
         self.model_para = self.reconstruct(average_weight)
         # self.model1 = average_weight
         # self.current_updates = self.updates
         # self.updates = []
-
 
     def train_time_simulate(self, env, my_round, client_simulate_list, bandwidth, replica, seg,num):
         if my_round != 0:
@@ -140,7 +140,7 @@ class Client:
         yield env.timeout(self.training_time)
         self.sigal = True
         # self.training_time.append(env.now)
-        idx_list = self.get_idx_list(e, replica, seg,num)
+        idx_list = self.get_idx_list(e, replica, seg,num,my_round)
         print('[Time:', env.now, ']', self.idx, 'pull from', idx_list)
         events = [env.process(self.get_transfer_time(env, client_simulate_list, bandwidth, my_round, i, seg)) for i in
                   idx_list]
@@ -149,7 +149,7 @@ class Client:
         self.record_time[my_round+1] = env.now
         self.round_signal = True
 
-    def choose_best_segment(self, e, replica,num):
+    def choose_best_segment(self, e, replica,num,my_round,seg):
         target = []
         if self.args.algorithm == 'BACombo':
             if num < self.e:
@@ -160,6 +160,7 @@ class Client:
                 client_candidate = list(range(self.clients_num))  # .remove(self.idx)
                 client_candidate.remove(self.idx)
                 # for i in range(replica):
+                np.random.seed(my_round+self.idx+seg)
                 target = np.random.choice(client_candidate, size=replica, replace=False)
                 # a = np.random.randint(0, self.clients_num)
                 # while a == self.idx or a in target:
@@ -167,7 +168,7 @@ class Client:
                 # print('find one for ', i)
                 # target.append(a)
             else:
-                # print('find max bandwidth')
+                print('find max bandwidth')
                 pridict = []
                 for bandwidth in self.pridict_bandwidth:
                     if len(bandwidth) < latest_n:
@@ -180,6 +181,7 @@ class Client:
             # print('select target')
             client_candidate = list(range(self.clients_num))
             client_candidate.remove(self.idx)
+            np.random.seed(my_round + self.idx +seg)
             target = np.random.choice(client_candidate, size=replica, replace=False)
             # for i in range(replica):
             #     a = np.random.randint(0, self.clients_num)
@@ -213,11 +215,13 @@ class Client:
 
     def update_bandwidth(self, seg):
         seg_size = sys.getsizeof(self.updates)
-        time = self.transfer_time[-1]
+        time = self.transfer_time[self.idx]
         # client_idx_list =
         for i in range(self.clients_num):
             if time[i] != -1:
                 self.pridict_bandwidth[i].append((seg_size / seg) / time[i])
+        # print(6546245,self.idx,time,self.pridict_bandwidth)
+
 
     def get_transfer_time(self, env, client_simulate_list, bandwidth, my_round, idx_list, seg):
         events = [env.process(self.pull_seg(env, client_simulate_list[i], i, bandwidth, my_round, seg))
@@ -226,10 +230,10 @@ class Client:
         # print(12132424,self.idx)
         # self.max_seg_transfer_time = np.max(self.seg_transfer_time)
 
-    def get_idx_list(self, e, replica, seg,num):
+    def get_idx_list(self, e, replica, seg,num,my_round):
         idx_list = []
         for i in range(seg):
-            target = self.choose_best_segment(e, replica,num)
+            target = self.choose_best_segment(e, replica,num,my_round,i)
             idx_list.append(target)
         return idx_list
         # client_num_list = list(range(client_num))
@@ -287,6 +291,9 @@ class Client:
             data = self.eval_data
         self.model.set_params(self.model_para)
         metrics = self.model.test(data)
+        if metrics['accuracy']<=0.01:
+            print(11111)
+        # if set_to_use =='test':
         metrics['time'] = self.record_time[my_round]
 
         # metrics['']

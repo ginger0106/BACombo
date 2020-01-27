@@ -120,16 +120,16 @@ class set_up():
         if self.args.algorithm == 'gossip':
             print(3333)
             for c in self.clients:
-                c.update_model(self.args.replica, 1, self.server,random_num)
+                c.update_model(self.args.replica, 1, self.server,random_num,my_round)
                 # c.metrics = c.test(my_round,'test')
         elif self.args.algorithm == 'combo':
             for c in self.clients:
-                c.update_model(self.args.replica, self.args.segment, self.server,random_num)
+                c.update_model(self.args.replica, self.args.segment, self.server,random_num,my_round)
                 # c.metrics = c.test(my_round,'test')
         elif self.args.algorithm == 'BACombo':
 
             for c in self.clients:
-                c.update_model(self.args.replica, self.args.segment, self.server,random_num)
+                c.update_model(self.args.replica, self.args.segment, self.server,random_num,my_round)
 
             for c in self.clients:
                 c.update_bandwidth(self.args.segment)
@@ -277,13 +277,13 @@ def print_stats(env,num_round, server, clients, num_samples, args, writer):
         print_metrics(test_stat_metrics, num_samples, prefix='test_')
         writer(num_round, test_stat_metrics, 'test')
     else:
-        # train_stat_metrics = {}
-        # for client in clients:
-        #     #client.model1 = server.model
-        #     c_metrics = client.test('train')
-        #     train_stat_metrics[client.id] = c_metrics
-        # print_metrics(train_stat_metrics, num_samples, prefix='train_')
-        # writer(num_round, train_stat_metrics, 'train')
+        train_stat_metrics = {}
+        for client in clients:
+            #client.model1 = server.model
+            c_metrics = client.test(num_round,'train')
+            train_stat_metrics[client.id] = c_metrics
+        print_metrics(train_stat_metrics, num_samples, prefix='train_')
+        writer(num_round, train_stat_metrics, 'train')
         test_stat_metrics = {}
         for client in clients:
             #client.model1 = server.model
