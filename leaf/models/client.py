@@ -176,6 +176,7 @@ class Client:
                     else:
                         pridict.append(np.mean(bandwidth[-latest_n:]))
                 target = np.argpartition(pridict,-replica)[-replica:]
+                np.random.shuffle(target)
                 # target = list(map(pridict.index, heapq.nlargest(latest_n, self.pridict_bandwidth)))
         else:
             # print('select target')

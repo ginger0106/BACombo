@@ -243,6 +243,7 @@ def setup_clients(e,env,dataset, model=None):
     test_data_dir = os.path.join('..', 'data', dataset, 'data', 'test')
 
     users, groups, train_data, test_data = read_data(train_data_dir, test_data_dir)
+    print(9898334353252435,len(users))
 
     clients = create_clients(e,env,users, groups, train_data, test_data, model)
 
