@@ -2,6 +2,7 @@ import warnings
 import heapq
 import simpy
 import argparse
+import tensorflow
 from utils.args import parse_args
 import simpy
 import numpy as np
@@ -20,9 +21,10 @@ g = 0.01
 
 
 class Client:
-    def __init__(self, e, env, idx, clients_num, client_id, group=None, train_data={'x': [], 'y': []},
+    def __init__(self, aggregation, e, env, idx, clients_num, client_id, group=None, train_data={'x': [], 'y': []},
                  eval_data={'x': [], 'y': []}, model=None):
         self._model = model
+        self.aggregation = aggregation
         self.e = e
         self.id = client_id  # integer
         self.idx = int(idx)
@@ -51,6 +53,7 @@ class Client:
         self.round_signal = False
         self.training_time = 0
         self.metrics = {}
+        self.local_update = model.get_params()
         for i in range(clients_num):
             a = []
             for j in range(clients_num):
@@ -58,6 +61,10 @@ class Client:
             self.transfer_time.append(a)
         self.args = parse_args()
         self.test_signal =False
+        self.model_shape = np.array(self.flat_updates(self.model_para)).shape
+        self.m = np.zeros(self.model_shape)
+        self.v = np.zeros(self.model_shape)
+
 
 
     def train(self, server, num_epochs=1, batch_size=10, minibatch=None):
@@ -74,10 +81,11 @@ class Client:
             update: set of weights
             update_size: number of bytes in update
         """
+        # print(65342452435,self.id)
         start_time = datetime.now()
         if minibatch is None:
             data = self.train_data
-            comp, update = self.model.train(data, num_epochs, batch_size)
+            comp, update,accumulative_gradient = self.model.train_tau(data, num_epochs, batch_size)
         else:
             frac = min(1.0, minibatch)
             num_data = max(1, int(frac * len(self.train_data["x"])))
@@ -86,6 +94,11 @@ class Client:
             # Minibatch trains for only 1 epoch - multiple local epochs don't make sense!
             num_epochs = 1
             comp, update = self.model.train(data, num_epochs, num_data)
+
+        if self.aggregation !='weight':
+            self.local_update = self.flat_updates(update)
+            update = accumulative_gradient
+        # else:
         num_train_samples = len(data['y'])
         self.update = self.flat_updates(update)  # save flattened model weights
         # self.updates.append((num_train_samples, update))
@@ -93,6 +106,15 @@ class Client:
         end_time = datetime.now()
         self.training_time = (end_time - start_time).seconds
         return comp, num_train_samples, update
+
+    def adam(self,gradient,para,my_round,beta_1=0.9,beta_2=0.999,epsilon=10e-8,step_size = 0.001):
+        g = gradient
+        self.m = beta_1 * self.m + (1 - beta_1) * g
+        self.v = beta_2 * self.v + (1 - beta_2) * np.power(g, 2)
+        m_hat = self.m / (1 - np.power(beta_1, my_round+1))
+        v_hat = self.v / (1 - np.power(beta_2, my_round+1))
+        para = para - step_size * m_hat / (np.sqrt(v_hat) + epsilon)
+        return para
 
     def flat_updates(self, model_weights):
         self.shape_list = []
@@ -110,26 +132,21 @@ class Client:
             target = self.choose_best_segment(e, replica,num,my_round,p)
             segment_weight = server.updates[self.idx][0] * self.get_segments(server.updates[self.idx][1], p, segment)
             sum_sample += server.updates[self.idx][0]
-            # segment_weight = self.get_segments(self.updates_flat, p, segment)
-            # print('segment:', p, len(segment_weight))
             for k in range(replica):
                 segment_weight += server.updates[target[k]][0] * self.get_segments(server.updates[target[k]][1], p,
                                                                                    segment)
                 sum_sample += server.updates[target[k]][0]
-            # print('replica done', len(segment_weight))
-            # segment_weight = np.array(segment_weight)
-            # segment_weight = segment_weight/(replica + 1)
             weight_list = np.concatenate((weight_list, segment_weight), axis=None)
-            # weight_list.extend(weight_list)
-        # print('segment done',len(sum_sample))
         average_weight = segment * np.float64(weight_list) / sum_sample
-        #
-        #
-        # weight_list = np.array(weight_list)
+        if self.aggregation == 'sgd':
+            # print(11111,np.array(self.local_update).shape, np.array(average_weight).shape)
+            average_weight = self.local_update - 0.003 * average_weight
+        elif self.aggregation == 'adam':
+            average_weight = self.adam(average_weight, self.local_update, my_round)
         self.model_para = self.reconstruct(average_weight)
-        # self.model1 = average_weight
-        # self.current_updates = self.updates
-        # self.updates = []
+        # model_gradient = self.reconstruct()
+        # average_weight = self.adam(average_weight,self.local_update,my_round)
+        # self.model_para = model_para_t-self.updates
 
     def train_time_simulate(self, env, my_round, client_simulate_list, bandwidth, replica, seg,num):
         if my_round != 0:
@@ -139,7 +156,6 @@ class Client:
         print('-------------client [%d] round [%s] begin at %f:------------' % (self.idx, my_round, env.now))
         yield env.timeout(self.training_time)
         self.sigal = True
-        # self.training_time.append(env.now)
         idx_list = self.get_idx_list(e, replica, seg,num,my_round)
         print('[Time:', env.now, ']', self.idx, 'pull from', idx_list)
         events = [env.process(self.get_transfer_time(env, client_simulate_list, bandwidth, my_round, i, seg)) for i in

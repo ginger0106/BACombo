@@ -22,6 +22,7 @@ class Model(ABC):
         with self.graph.as_default():
             tf.set_random_seed(123 + seed)
             self.features, self.labels, self.train_op, self.eval_metric_ops, self.loss = self.create_model()
+            self.gradient_op = tf.gradients(self.loss, tf.trainable_variables())
             self.saver = tf.train.Saver()
         self.sess = tf.Session(graph=self.graph)
 
@@ -33,11 +34,11 @@ class Model(ABC):
             metadata = tf.RunMetadata()
             opts = tf.profiler.ProfileOptionBuilder.float_operation()
             self.flops = tf.profiler.profile(self.graph, run_meta=metadata, cmd='scope', options=opts).total_float_ops
+            # self.para_shape = self.sess.run(tf.trainable_variables()).shape
 
     def set_params(self, model_params):
         with self.graph.as_default():
             all_vars = tf.trainable_variables()
-            # print(11111,model_params)
             for variable, value in zip(all_vars, model_params):
                 variable.load(value, self.sess)
 
@@ -45,6 +46,15 @@ class Model(ABC):
         with self.graph.as_default():
             model_params = self.sess.run(tf.trainable_variables())
         return model_params
+
+    def get_gradient(self):
+        with self.graph.as_default():
+            gradients = tf.gradients(self.loss, tf.trainable_variables())
+        return gradients
+
+    def get_params_by_gradient(self,gradients):
+        new_paras = self.get_params() - self.lr * gradients
+        return new_paras
 
     @property
     def optimizer(self):
@@ -84,10 +94,41 @@ class Model(ABC):
         """
         for _ in range(num_epochs):
             self.run_epoch(data, batch_size)
-
         update = self.get_params()
+        # gradients = self.get_gradient()
         comp = num_epochs * (len(data['y'])//batch_size) * batch_size * self.flops
         return comp, update
+
+    # def train_tau(self,data, num_epochs=1, batch_size=10):
+
+    def train_tau(self,data,num_tau=1, batch_size=10):
+        # print
+        count = 0
+        gradient = []
+        # while count <= num_tau:
+        for batched_x, batched_y in batch_data(data, batch_size):
+            random_num = np.random.random()
+            # print('random number', random_num)
+            if count > num_tau:
+                break
+            if random_num<=0.8:
+                input_data = self.process_x(batched_x)
+                target_data = self.process_y(batched_y)
+                with self.graph.as_default():
+                    # print('start gradient')
+                    _,gradient = self.sess.run([self.train_op,self.gradient_op],
+                        feed_dict={
+                            self.features: input_data,
+                            self.labels: target_data
+                        })
+                    gradient += np.array(gradient)
+                    # print('end gradient')
+                count += 1
+                    # print(count)
+        update = self.get_params()
+        accumulative_gradients = gradient
+        comp = num_tau* batch_size * self.flops
+        return comp, update,accumulative_gradients
 
     def run_epoch(self, data, batch_size):
         for batched_x, batched_y in batch_data(data, batch_size):
