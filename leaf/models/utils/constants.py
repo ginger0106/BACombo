@@ -4,3 +4,5 @@ DATASETS = ['sent140', 'femnist', 'shakespeare', 'celeba', 'synthetic']
 SIM_TIMES = ['small', 'medium', 'large']
 
 ALGORITHM = ['fedavg', 'gossip', 'combo', 'BACombo']
+
+AGGREGATION = ['weight', 'sgd', 'adam']

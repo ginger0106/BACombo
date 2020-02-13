@@ -1,6 +1,6 @@
 import argparse
 
-from .constants import DATASETS, ALGORITHM, SIM_TIMES
+from .constants import DATASETS, ALGORITHM, SIM_TIMES,AGGREGATION
 
 
 def parse_args():
@@ -35,6 +35,11 @@ def parse_args():
     parser.add_argument('--eval-every',
                     help='evaluate every ____ rounds;',
                     type=int,
+                    default=-1)
+    parser.add_argument('--aggregation',
+                    help='aggregation;',
+                    type=str,
+                    choices=AGGREGATION,
                     default=-1)
     parser.add_argument('--clients-per-round',
                     help='number of clients trained per round;',
