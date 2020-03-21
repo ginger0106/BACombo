@@ -89,5 +89,10 @@ def parse_args():
                     type=float,
                     default=-1,
                     required=False)
+    parser.add_argument('-adam_lr',
+                    help='learning rate for adam optimizers;',
+                    type=float,
+                    default=-1,
+                    required=False)
 
     return parser.parse_args()

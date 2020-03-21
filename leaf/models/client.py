@@ -11,6 +11,9 @@ from simpy.events import AnyOf, AllOf
 import sys
 from datetime import datetime
 
+import os
+# os.path.join()
+
 latest_n = 5  # 取最近五个预测带宽取平均
 init_pridict_bandwidth = 10  # 初始化预测带宽的大小
 e = 0.5
@@ -124,7 +127,7 @@ class Client:
             flat_m.extend(list(x.ravel()))
         return flat_m
 
-    def update_model(self, replica, segment, server,num,my_round):
+    def update_model(self, replica, segment, server,num,my_round,adam_step_size):
         print('-----update[%s]------' % self.idx)
         weight_list = []
         sum_sample = 0
@@ -142,7 +145,7 @@ class Client:
             # print(11111,np.array(self.local_update).shape, np.array(average_weight).shape)
             average_weight = self.local_update - 0.003 * average_weight
         elif self.aggregation == 'adam':
-            average_weight = self.adam(average_weight, self.local_update, my_round)
+            average_weight = self.adam(average_weight, self.local_update, my_round,step_size=adam_step_size)
         self.model_para = self.reconstruct(average_weight)
         # model_gradient = self.reconstruct()
         # average_weight = self.adam(average_weight,self.local_update,my_round)

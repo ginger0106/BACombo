@@ -102,7 +102,7 @@ class set_up():
                 # c.metrics = c.test(my_round,'test')
         elif self.args.algorithm == 'combo':
             for c in self.clients:
-                c.update_model(self.args.replica, self.args.segment, self.server,random_num,my_round)
+                c.update_model(self.args.replica, self.args.segment, self.server,random_num,my_round,self.args.adam_lr)
                 # c.metrics = c.test(my_round,'test')
         elif self.args.algorithm == 'BACombo':
 
