@@ -23,12 +23,12 @@ declare -a gossip_vals=(
 #         "2 1 5 0.5 sgd"
 #         "4 1 5 0.5 sgd"
 #         "8 1 5 0.5 sgd"
-         "16 1 5 0.5 sgd"
+#         "16 1 5 0.5 sgd"
 #         "1 1 5 0.5 adam"
 #         "2 1 5 0.5 adam"
 #         "4 1 5 0.5 adam"
 #         "8 1 5 0.5 adam"
-         "16 1 5 0.5 adam"
+#         "16 1 5 0.5 adam"
 )
 
 declare -a combo_vals=(
@@ -126,10 +126,10 @@ function run_combo(){
 	pushd models/
 #		python main.py -dataset 'femnist' -model 'cnn' --num-rounds ${num_rounds} --clients-per-round ${clients_per_round} --num-epochs ${num_epochs} -lr ${fedavg_lr}
 		python main.py dataset 'femnist' -model 'cnn' -algorithm combo --num-rounds ${num_rounds} --num-epochs \
-		${num_epochs}  --segment ${segment} --replica ${replica} --aggregation ${aggregation} --eval-every 1 -e ${e} \
-		--metrics-name  "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}_a${aggregation}" > "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}_a${aggregation}.log" &
+		${num_epochs}  --segment ${segment} --replica ${replica} --aggregation ${aggregation} --eval-every 1 -e 0.5 -adam_lr ${e}\
+		--metrics-name  "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_lr_${e}_a${aggregation}" > "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_lr_${e}_a${aggregation}.log" &
 	popd
-	move_data ${output_dir} "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_e_${e}_a${aggregation}"
+	move_data ${output_dir} "combo_s_${segment}_r_${replica}_epoch_${num_epochs}_lr_${e}_a${aggregation}"
 }
 
 function run_bacombo() {
